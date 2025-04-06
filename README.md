@@ -8,7 +8,7 @@ Welcome to the official repository for **Xenotune**, an intelligent ambient soun
 ## 🚀 Project Highlights
 
 - 🎧 **AI-Powered Soundscapes** based on user mood
-- 🤖 Mood/Mode detection using trained models (Pro users only)
+- 🤖 Mood/Mode detection using trained models
 - 🌐 Django-powered REST API backend
 - 📱 Flutter-based mobile frontend
 - 🔐 Subscription system with Pro features
@@ -49,11 +49,11 @@ xenotune/
 | Layer        | Technology        |
 |--------------|-------------------|
 | Frontend     | Flutter           |
-| Backend      | Django REST Framework |
+| Backend      | Django            |
 | AI / ML      | Python (custom models, possibly TensorFlow/PyTorch) |
 | Auth         | Firebase OTP or Django Token |
 | Deployment   | Render / Railway (for backend) |
-| Storage      | Firebase / AWS S3 (for sound files) |
+| Storage      | Firebase / PostgreSQL) |
 
 ---
 
@@ -66,8 +66,6 @@ xenotune/
 5. **Testing & QA**
 6. **Deployment**
 7. **Post-launch Updates**
-
-👉 See `docs/Xenotune Workflow.pdf` for the full roadmap.
 
 ---
 
@@ -118,4 +116,4 @@ This project is licensed under the MIT License – see the [LICENSE](LICENSE) fi
 ## 🌐 Company
 
 Built with ❤️ by **Xenotrix Technologies**, Kerala, India  
-Website: _Coming Soon_
+[Website](https://xenotrix-technologies.github.io/XenoTUNE/)
