@@ -1,52 +1,121 @@
-# Xenotune
 
-**Xenotune** is an innovative mobile application designed by Xenotrix Technologies to deliver a personalized, mood-based music experience. Leveraging AI for mood detection and dynamic audio generation, Xenotune aims to provide a unique user experience through its sleek design and responsive interface.
+# 🎵 Xenotune – AI-Powered Mood-Based Sound Experience
 
-## Table of Contents
+Welcome to the official repository for **Xenotune**, an intelligent ambient sound and music application developed by **Xenotrix Technologies**. Xenotune uses AI to understand user moods and generate customized soundscapes for focus, relaxation, and productivity.
 
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
-- [Repository Structure](#repository-structure)
-- [Contributing](#contributing)
-- [License](#license)
+---
 
-## Overview
+## 🚀 Project Highlights
 
-Xenotune dynamically adjusts content based on the user's mood by integrating AI-powered models with a modern mobile interface. The application is split into two primary components:
+- 🎧 **AI-Powered Soundscapes** based on user mood
+- 🤖 Mood/Mode detection using trained models (Pro users only)
+- 🌐 Django-powered REST API backend
+- 📱 Flutter-based mobile frontend
+- 🔐 Subscription system with Pro features
+- 📊 Post-launch analytics & performance tracking
 
-- **Frontend:** Developed in Flutter for a smooth, cross-platform experience.
-- **Backend:** Built with Django to handle core functionalities including user management, AI integrations, and data handling.
+---
 
-## Features
+## 📁 Folder Structure
 
-- **AI-Driven Mood Detection:** Advanced algorithms that analyze user mood to tailor music experiences.
-- **Dynamic Audio Generation:** Unique audio outputs based on detected mood, available for Pro users.
-- **User Authentication & Subscription:** Secure login and subscription-based access.
-- **Responsive UI:** Designed with Flutter for seamless performance across devices.
-- **Feedback System:** In-app mechanism for user feedback and continuous improvement.
+```bash
+xenotune/
+├── backend/                  # Django Backend
+│   ├── xenotune_api/        # Core Django project
+│   ├── mood_ai/             # AI mood detection module
+│   ├── auth/                # Authentication (login/OTP)
+│   ├── soundengine/         # AI audio generation
+│   └── requirements.txt     # Backend dependencies
+│
+├── frontend/                # Flutter Frontend
+│   ├── lib/
+│   │   ├── screens/         # Home, Explore, Player, etc.
+│   │   ├── models/          # App data models
+│   │   ├── services/        # API & state management
+│   │   └── main.dart        # App entry point
+│   └── pubspec.yaml         # Flutter dependencies
+│
+├── assets/                  # Audio samples, UI images
+├── docs/                    # Wireframes, workflow PDFs
+├── .gitignore
+├── README.md
+└── LICENSE
+```
 
-## Tech Stack
+---
 
-- **Frontend:** Flutter
-- **Backend:** Django
-- **AI:** Python-based models for mood detection and audio processing
-- **Database:** PostgreSQL / Firebase (configurable based on requirements)
-- **CI/CD:** GitHub Actions
+## 🛠️ Tech Stack
 
-## Getting Started
+| Layer        | Technology        |
+|--------------|-------------------|
+| Frontend     | Flutter           |
+| Backend      | Django REST Framework |
+| AI / ML      | Python (custom models, possibly TensorFlow/PyTorch) |
+| Auth         | Firebase OTP or Django Token |
+| Deployment   | Render / Railway (for backend) |
+| Storage      | Firebase / AWS S3 (for sound files) |
 
-### Prerequisites
+---
 
-- [Flutter SDK](https://flutter.dev/)
-- [Python 3.8+](https://www.python.org/)
-- [Django](https://www.djangoproject.com/)
+## 🧭 Project Workflow
 
-### Installation
+1. **Research & Planning**
+2. **Wireframing & Design**
+3. **Frontend & Backend Development**
+4. **AI Integration (Mood Detection & Sound Gen)**
+5. **Testing & QA**
+6. **Deployment**
+7. **Post-launch Updates**
 
-1. **Clone the Repository:**
+👉 See `docs/Xenotune Workflow.pdf` for the full roadmap.
 
-   ```bash
-   git clone https://github.com/xenotrix-technologies/xenotune.git
-   cd xenotune
+---
+
+## 💡 Key Features
+
+- Real-time mood analysis
+- AI-generated ambient soundscapes
+- Pro-only premium experiences
+- Clean, minimal UI
+- Cross-platform mobile support
+
+---
+
+## 🧪 Getting Started
+
+### Backend
+
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python manage.py runserver
+```
+
+### Frontend
+
+```bash
+cd frontend
+flutter pub get
+flutter run
+```
+
+---
+
+## 📌 Contribution
+
+We welcome contributors! Please open issues and pull requests in this repository.
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🌐 Company
+
+Built with ❤️ by **Xenotrix Technologies**, Kerala, India  
+Website: _Coming Soon_
