@@ -4,6 +4,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from music21 import stream, note, chord, tempo, instrument
+from rest_framework import viewsets, permissions
+from .models import MoodEntry
+from .serializers import MoodEntrySerializer
 import os
 
 class GenerateSoundscape(APIView):
@@ -61,3 +64,13 @@ class GenerateSoundscape(APIView):
             response = HttpResponse(f.read(), content_type='audio/midi')
             response['Content-Disposition'] = f'attachment; filename={mood}.midi'
             return response
+        
+class MoodEntryViewSet(viewsets.ModelViewSet):
+    serializer_class = MoodEntrySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return MoodEntry.objects.filter(user=self.request.user).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
