@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from .models import CustomUser, UserPreference, Mood, ListeningTime
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 class RegisterView(APIView):
     def post(self, request):
@@ -17,7 +19,9 @@ class RegisterView(APIView):
         
         user = CustomUser.objects.create_user(username=username, email=email, password=password)
         token, _ = Token.objects.get_or_create(user=user)
-        return Response({'token': token.key}, status=status.HTTP_201_CREATED)
+
+        return HttpResponseRedirect(redirect_to=reverse('login'))
+
 
 class LoginView(APIView):
     def post(self, request):
