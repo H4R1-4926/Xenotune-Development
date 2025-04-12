@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import MoodDetectionView
+from ai.views import GenerateSoundscape
 
 urlpatterns = [
-    path('mood/', MoodDetectionView.as_view()),
+    path('api/soundscape/<str:mood>/', GenerateSoundscape.as_view(), name='generate_soundscape'),
 ]
