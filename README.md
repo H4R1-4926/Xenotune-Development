@@ -90,4 +90,4 @@ This project is licensed under the MIT License – see the [LICENSE](LICENSE) fi
 ## 🌐 Company
 
 Built with ❤️ by **Xenotrix Technologies**, Kerala, India  
-[Website](https://xenotrix-technologies.github.io/XenoTUNE/)
+[Website](https://xenotrix-technologies.github.io/Xenotune/)
