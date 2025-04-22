@@ -16,32 +16,6 @@ Welcome to the official repository for **Xenotune**, an intelligent ambient soun
 
 ---
 
-## 📁 Folder Structure
-
-```bash
-xenotune/
-├── backend/                  # Django Backend
-│   ├── xenotune_api/        # Core Django project
-│   ├── mood_ai/             # AI mood detection module
-│   ├── auth/                # Authentication (login/OTP)
-│   ├── soundengine/         # AI audio generation
-│   └── requirements.txt     # Backend dependencies
-│
-├── frontend/                # Flutter Frontend
-│   ├── lib/
-│   │   ├── screens/         # Home, Explore, Player, etc.
-│   │   ├── models/          # App data models
-│   │   ├── services/        # API & state management
-│   │   └── main.dart        # App entry point
-│   └── pubspec.yaml         # Flutter dependencies
-│
-├── assets/                  # Audio samples, UI images
-├── docs/                    # Wireframes, workflow PDFs
-├── .gitignore
-├── README.md
-└── LICENSE
-```
-
 ---
 
 ## 🛠️ Tech Stack
@@ -116,4 +90,4 @@ This project is licensed under the MIT License – see the [LICENSE](LICENSE) fi
 ## 🌐 Company
 
 Built with ❤️ by **Xenotrix Technologies**, Kerala, India  
-[Website](https://xenotrix-technologies.github.io/XenoTUNE/)
+[Website](https://xenotrix-technologies.github.io/Xenotune/)
