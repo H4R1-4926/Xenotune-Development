@@ -1,11 +1,9 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from ai.views import GenerateSoundscape, MoodEntryViewSet
-
-router = DefaultRouter()
-router.register(r'moods', MoodEntryViewSet, basename='mood')
+from django.urls import path
+from .views import GenerateSoundscape
+from django.http import HttpResponse
 
 urlpatterns = [
-    path('api/soundscape/<str:mood>/', GenerateSoundscape.as_view(), name='generate_soundscape'),
-    path('api/', include(router.urls)),
+    path('<str:mood>/', GenerateSoundscape.as_view(), name='generate-soundscape'),
+    #path('test/', lambda request: HttpResponse("It works!")),
+
 ]
