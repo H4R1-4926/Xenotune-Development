@@ -178,3 +178,4 @@ def generate_music(mode):
     wav_path = convert_midi_to_wav(midi_path)
     final_path = mix_ambient_layers(wav_path, mode)
     return final_path
+
