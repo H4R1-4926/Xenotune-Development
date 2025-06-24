@@ -1,93 +1,106 @@
+# 🎶 Xenotune AI Music Generator (FastAPI Backend)
 
-# 🎵 Xenotune – AI-Powered Mood-Based Sound Experience
-
-Welcome to the official repository for **Xenotune**, an intelligent ambient sound and music application developed by **Xenotrix Technologies**. Xenotune uses AI to understand user moods and generate customized soundscapes for focus, relaxation, and productivity.
-
----
-
-## 🚀 Project Highlights
-
-- 🎧 **AI-Powered Soundscapes** based on user mood
-- 🤖 Mood/Mode detection using trained models
-- 🌐 Django-powered REST API backend
-- 📱 Flutter-based mobile frontend
-- 🔐 Subscription system with Pro features
-- 📊 Post-launch analytics & performance tracking
+This project is the backend for the **Xenotune AI Music Generator**, an intelligent ambient music creation tool using Python’s `music21` library. It supports mood-based music generation: **Focus**, **Relax**, and **Sleep**. Built using FastAPI, it is lightweight, scalable, and integrates easily with a Flutter frontend.
 
 ---
 
----
+## 📂 Project Structure
 
-## 🛠️ Tech Stack
-
-| Layer        | Technology        |
-|--------------|-------------------|
-| Frontend     | Flutter           |
-| Backend      | Django            |
-| AI / ML      | Python (custom models, possibly TensorFlow/PyTorch) |
-| Auth         | Firebase OTP or Django Token |
-| Deployment   | Render / Railway (for backend) |
-| Storage      | Firebase / PostgreSQL) |
+```
+backend/
+├── main.py            # FastAPI app and routes
+├── music_gen.py       # Core music generation logic using music21
+├── config.json        # Configuration for modes and instruments
+├── output/            # Folder for generated MIDI files
+└── assets/            # Optional ambient sounds (e.g., rain, forest)
+```
 
 ---
 
-## 🧭 Project Workflow
+## ⚙️ Setup Instructions
 
-1. **Research & Planning**
-2. **Wireframing & Design**
-3. **Frontend & Backend Development**
-4. **AI Integration (Mood Detection & Sound Gen)**
-5. **Testing & QA**
-6. **Deployment**
-7. **Post-launch Updates**
-
----
-
-## 💡 Key Features
-
-- Real-time mood analysis
-- AI-generated ambient soundscapes
-- Pro-only premium experiences
-- Clean, minimal UI
-- Cross-platform mobile support
-
----
-
-## 🧪 Getting Started
-
-### Backend
+### 1. Clone the Repository
 
 ```bash
-cd backend
+git clone https://github.com/yourusername/xenotune-backend.git
+cd xenotune-backend
+```
+
+### 2. Create and Activate Virtual Environment
+
+```bash
 python -m venv venv
+
+# Activate the environment:
+# Windows
+venv\Scripts\activate
+
+# macOS/Linux
 source venv/bin/activate
-pip install -r requirements.txt
-python manage.py runserver
 ```
 
-### Frontend
+### 3. Install Dependencies
 
 ```bash
-cd frontend
-flutter pub get
-flutter run
+pip install -r requirements.txt
+```
+
+> Make sure `ffmpeg` is installed if you plan to use `.wav` ambient sounds with `pydub`.
+
+---
+
+## 🚀 Run the FastAPI Server
+
+```bash
+uvicorn main:app --reload
+```
+
+- Swagger Docs: http://127.0.0.1:8000/docs  
+- API Root: http://127.0.0.1:8000
+
+---
+
+## 📡 API Endpoint
+
+### `POST /generate/`
+
+Generate a MIDI file based on the selected mood.
+
+**Request (form-data):**
+- `mode`: one of `focus`, `relax`, or `sleep`
+
+**Response:**
+- MIDI file (`.mid`) for download
+
+---
+
+## 🧾 Example cURL Request
+
+```bash
+curl -X POST "http://127.0.0.1:8000/generate/" -F "mode=relax" --output relax_output.mid
 ```
 
 ---
 
-## 📌 Contribution
+## 📦 Dependencies
 
-We welcome contributors! Please open issues and pull requests in this repository.
+- fastapi
+- uvicorn
+- music21
+- pydub
+- python-multipart
+
+See `requirements.txt` for exact versions.
 
 ---
 
-## 📝 License
+## 📌 License
 
-This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. You are free to use, modify, and distribute.
 
 ---
 
-## 🌐 Company
+## ✨ Credits
 
-Built with ❤️ by **Xenotrix Technologies**, Kerala, India  
-[Website](https://xenotrix-technologies.github.io/Xenotune/)
+Developed with ❤️ by Sanjay S  
+Powered by FastAPI & music21
