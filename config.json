@@ -27,7 +27,7 @@
         ]
       },
       {
-        "name": "Bass Guitar",
+        "name": "Electric Bass",
         "style": "walking bass",
         "chords": [
           { "notes": ["C2", "G2"], "type": "root5" },
@@ -38,17 +38,8 @@
         ]
       },
       {
-        "name": "Drum Kit",
-        "style": "groove patterns",
-        "patterns": [
-          "kick-snare-hat-kick-snare",
-          "kick-kick-hat-snare-hat",
-          "kick-snare-snare-hat-kick"
-        ]
-      },
-      {
-        "name": "Arpeggiator",
-        "style": "16th note runs",
+        "name": "Electric Guitar",
+        "style": "arpeggios",
         "chords": [
           { "notes": ["C4", "E4", "G4"], "type": "arp" },
           { "notes": ["F4", "A4", "C5"], "type": "arp" },
@@ -86,7 +77,7 @@
         ]
       },
       {
-        "name": "Soft Strings",
+        "name": "Violin",
         "style": "lush pads",
         "chords": [
           { "notes": ["C4", "G4", "E5"], "type": "maj7" },
@@ -120,7 +111,7 @@
     "tempo": 48,
     "instruments": [
       {
-        "name": "Felt Piano",
+        "name": "Piano",
         "style": "slow lullaby",
         "chords": [
           { "notes": ["C4", "E4", "G4", "B4"], "type": "maj7" },
@@ -132,7 +123,7 @@
         ]
       },
       {
-        "name": "Air Pad",
+        "name": "Hammond Organ",
         "style": "slow ambient",
         "chords": [
           { "notes": ["C3", "G3", "C4"], "type": "drone" },
@@ -142,7 +133,7 @@
         ]
       },
       {
-        "name": "Sub Bass",
+        "name": "Electric Bass",
         "style": "long sustained",
         "chords": [
           { "notes": ["C1", "G1"], "type": "drone" },
