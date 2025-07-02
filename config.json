@@ -103,17 +103,6 @@
           { "notes": ["D4", "F4", "A4", "C5"], "type": "min7" },
           { "notes": ["E4", "G4", "B4", "D5"], "type": "7" }
         ]
-      },
-      {
-        "name": "Ambient FX",
-        "style": "nature layers",
-        "samples": [
-          "birds.wav",
-          "rain.wav",
-          "wind.wav",
-          "forest.wav",
-          "stream.wav"
-        ]
       }
     ],
     "structure": [
@@ -150,17 +139,6 @@
           { "notes": ["F3", "C4", "F4"], "type": "drone" },
           { "notes": ["G3", "D4", "G4"], "type": "drone" },
           { "notes": ["A3", "E4", "A4"], "type": "drone" }
-        ]
-      },
-      {
-        "name": "Sleep FX",
-        "style": "ambient dreams",
-        "samples": [
-          "night_crickets.wav",
-          "deep_ocean.wav",
-          "wind_chimes.wav",
-          "light_rain.wav",
-          "breeze.wav"
         ]
       },
       {
