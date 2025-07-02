@@ -12,7 +12,6 @@ backend/
 ├── music_gen.py       # Core music generation logic using music21
 ├── config.json        # Configuration for modes and instruments
 ├── output/            # Folder for generated MIDI files
-└── assets/            # Optional ambient sounds (e.g., rain, forest)
 ```
 
 ---
@@ -54,10 +53,6 @@ pip install -r requirements.txt
 ```bash
 uvicorn main:app --reload
 ```
-
-- Swagger Docs: http://127.0.0.1:8000/docs  
-- API Root: http://127.0.0.1:8000
-
 ---
 
 ## 📡 API Endpoint
