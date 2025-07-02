@@ -42,6 +42,15 @@ def generate_chord_notes(root, quality):
     root_midi = note.Note(root).pitch.midi
     return [note.Note(midi=root_midi + i).nameWithOctave for i in intervals]
 
+# --- Section Placeholder ---
+def section(name, bars):
+    s = stream.Stream()
+    for _ in range(bars):
+        m = stream.Measure()
+        m.append(note.Rest(quarterLength=4.0))
+        s.append(m)
+    return s
+
 # --- Music Generator Core ---
 def generate_music(mode):
     config = load_config()
@@ -49,13 +58,27 @@ def generate_music(mode):
     bpm = mode_data["tempo"]
     instruments = mode_data["instruments"]
     structure = mode_data.get("structure", ["loop"])
+
     section_lengths = {
-        "intro": 8, "build": 12, "loop": 16, "variation": 16,
-        "bridge": 12, "fadeout": 8, "outro": 8, "layered loop": 24, "drone": 16
+        "intro": 4,
+        "loop": 16,
+        "variation": 16,
+        "drone": 16,
+        "outro": 4
     }
+
+    composition = stream.Stream()
+    composition.append(section("intro", 4))
+
+    for _ in range(10):
+        composition.append(section("loop", 16))
+        composition.append(section("variation", 16))
+        composition.append(section("drone", 16))
+
+    composition.append(section("outro", 4))
+
     beats_per_bar = 4
 
-    # Cleanup output directory
     output_path = "output"
     if os.path.exists(output_path):
         shutil.rmtree(output_path)
@@ -79,35 +102,38 @@ def generate_music(mode):
         if not chord_pool:
             continue
 
-        for section in structure:
-            bars = section_lengths.get(section, 16)
+        for section_name in structure:
+            bars = section_lengths.get(section_name, 16)
             section_beats = bars * beats_per_bar
             beats = 0
             while beats < section_beats:
                 chord_def = random.choice(chord_pool)
-                notes = chord_def.get("notes", [])
-                if not notes:
+                notes_list = chord_def.get("notes", [])
+                if not notes_list:
                     continue
                 has_notes = True
                 if "slow" in style or "sustained" in style:
-                    c = chord.Chord(notes, quarterLength=4.0)
-                    beats += 4
+                    c = chord.Chord(notes_list, quarterLength=3.0)
+                    c.volume.velocity = 40
+                    beats += 3
                 elif "arpeggiated" in style:
-                    for n in notes:
-                        part.append(note.Note(n, quarterLength=0.5))
+                    for n in notes_list:
+                        nt = note.Note(n, quarterLength=0.5)
+                        nt.volume.velocity = 25
+                        part.append(nt)
                         beats += 0.5
                         if beats >= section_beats:
                             break
                     continue
                 else:
-                    c = chord.Chord(notes, quarterLength=2.0)
-                    beats += 2
+                    c = chord.Chord(notes_list, quarterLength=1.5)
+                    c.volume.velocity = 50
+                    beats += 1.5
                 part.append(c)
 
         if has_notes:
             score.append(part)
 
-    # Melody Generator
     melody_part = stream.Part()
     melody_instrument = {
         "focus": instrument.Flute(),
@@ -132,9 +158,9 @@ def generate_music(mode):
     def retrograde(motif):
         return motif[::-1]
 
-    for section in structure:
+    for section_name in structure:
         motif = generate_motif()
-        bars = section_lengths.get(section, 16)
+        bars = section_lengths.get(section_name, 16)
         section_beats = bars * beats_per_bar
         melody_beats = 0
 
@@ -150,7 +176,6 @@ def generate_music(mode):
 
     score.append(melody_part)
 
-    # --- Export MIDI ---
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     output_file = f"output/{mode}_composition_{timestamp}.mid"
     mf = midi.translate.streamToMidiFile(score)
