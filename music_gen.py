@@ -9,41 +9,25 @@ def load_config(path="config.json"):
 # --- Instrument Mapping ---
 def get_music21_instrument(name):
     mapping = {
-        "Grand Piano": instrument.Piano(),
-        "Electric Bass": instrument.ElectricBass(),
-        "String Ensemble": instrument.Violin(),
-        "Electric Guitar": instrument.ElectricGuitar(),
-        "Nylon Guitar": instrument.AcousticGuitar(),
+        "Electric Piano": instrument.ElectricPiano(),
+        "Synth Lead": instrument.SopranoSaxophone(),
+        "Bass Guitar": instrument.ElectricBass(),
+        "Drum Kit": instrument.Woodblock(),
+        "Arpeggiator": instrument.Harpsichord(),
+        "Acoustic Guitar": instrument.AcousticGuitar(),
+        "Soft Strings": instrument.Violin(),
+        "Felt Piano": instrument.Piano(),
+        "Air Pad": instrument.ElectricOrgan(),
+        "Sub Bass": instrument.Contrabass(),
         "Flute": instrument.Flute(),
-        "Pan Flute": instrument.PanFlute(),
-        "Ambient Pad": instrument.ElectricOrgan(),
-        "Ambient Synth Pad": instrument.ElectricPiano(),
-        "Soft Felt Piano": instrument.Piano(),
-        "Synth Pad": instrument.ElectricPiano(),
-        "Nature FX": instrument.ElectricOrgan(),
-        "Poly Synth": instrument.ElectricPiano()
+        "Chill Guitar": instrument.AcousticGuitar(),
+        "Electric Guitar": instrument.ElectricGuitar(),
+
     }
     return mapping.get(name, instrument.Instrument(name))
 
-# --- Chord Generator ---
-def generate_chord_notes(root, quality):
-    intervals = {
-        "maj7": [0, 4, 7, 11],
-        "min7": [0, 3, 7, 10],
-        "sus2": [0, 2, 7],
-        "add9": [0, 4, 7, 14],
-        "maj9": [0, 4, 7, 11, 14],
-        "min9": [0, 3, 7, 10, 14],
-        "quartal": [0, 5, 10],
-        "power": [0, 7],
-        "drone": [0, 5, 12]
-    }.get(quality, [0, 4, 7])
-
-    root_midi = note.Note(root).pitch.midi
-    return [note.Note(midi=root_midi + i).nameWithOctave for i in intervals]
-
-# --- Section Placeholder ---
-def section(name, bars):
+# --- Section Generator ---
+def generate_section(name, bars):
     s = stream.Stream()
     for _ in range(bars):
         m = stream.Measure()
@@ -51,34 +35,22 @@ def section(name, bars):
         s.append(m)
     return s
 
-# --- Music Generator Core ---
+# --- Main Generator ---
 def generate_music(mode):
     config = load_config()
     mode_data = config[mode]
     bpm = mode_data["tempo"]
     instruments = mode_data["instruments"]
-    structure = mode_data.get("structure", ["loop"])
+    structure = mode_data["structure"]
 
     section_lengths = {
-        "intro": 4,
-        "loop": 16,
-        "variation": 16,
-        "drone": 16,
-        "outro": 4
+        "intro": 4, "groove": 8, "verse": 8, "chorus": 8, "bridge": 8,
+        "drop": 8, "build": 8, "solo": 8, "outro": 4, "loop": 16,
+        "variation": 8, "layered_loop": 8, "fadeout": 4, "layer1": 8,
+        "layer2": 8, "ambient_loop": 16, "dream_flow": 8, "infinite_loop": 16
     }
 
-    composition = stream.Stream()
-    composition.append(section("intro", 4))
-
-    for _ in range(10):
-        composition.append(section("loop", 16))
-        composition.append(section("variation", 16))
-        composition.append(section("drone", 16))
-
-    composition.append(section("outro", 4))
-
     beats_per_bar = 4
-
     output_path = "output"
     if os.path.exists(output_path):
         shutil.rmtree(output_path)
@@ -88,66 +60,59 @@ def generate_music(mode):
     score.append(tempo.MetronomeMark(number=bpm))
     score.insert(0, metadata.Metadata(title=f"Xenotune - {mode.title()} Mode"))
 
-    global_chord_pool = []
-    for inst in instruments:
-        global_chord_pool.extend(inst.get("chords", []))
-
+    # --- Instrumental Parts ---
     for inst in instruments:
         part = stream.Part()
         part.insert(0, get_music21_instrument(inst["name"]))
-        chord_pool = inst.get("chords", [])
         style = inst.get("style", "")
-        has_notes = False
-
-        if not chord_pool:
-            continue
+        notes = inst.get("notes", ["B3", "D4", "F4"])
 
         for section_name in structure:
-            bars = section_lengths.get(section_name, 16)
+            bars = section_lengths.get(section_name, 8)
             section_beats = bars * beats_per_bar
             beats = 0
             while beats < section_beats:
-                chord_def = random.choice(chord_pool)
-                notes_list = chord_def.get("notes", [])
-                if not notes_list:
-                    continue
-                has_notes = True
                 if "slow" in style or "sustained" in style:
-                    c = chord.Chord(notes_list, quarterLength=3.0)
-                    c.volume.velocity = 40
-                    beats += 3
-                elif "arpeggiated" in style:
-                    for n in notes_list:
+                    c = chord.Chord(notes, quarterLength=0.8)
+                    c.volume.velocity = 10
+                    part.append(c)
+                    beats += 2
+                elif "arpeggiator" in style or "arp" in style:
+                    for n in notes:
                         nt = note.Note(n, quarterLength=0.5)
-                        nt.volume.velocity = 25
+                        nt.volume.velocity = 9
                         part.append(nt)
                         beats += 0.5
                         if beats >= section_beats:
                             break
-                    continue
                 else:
-                    c = chord.Chord(notes_list, quarterLength=1.5)
-                    c.volume.velocity = 50
-                    beats += 1.5
-                part.append(c)
+                    c = chord.Chord(notes, quarterLength=1.0)
+                    c.volume.velocity = 15
+                    part.append(c)
+                    beats += 2.0
 
-        if has_notes:
-            score.append(part)
+        score.append(part)
 
+    # --- Melody Part ---
     melody_part = stream.Part()
+
+    # Select instrument based on mode
     melody_instrument = {
-        "focus": instrument.Flute(),
-        "relax": instrument.Oboe(),
-        "sleep": instrument.Clarinet()
-    }.get(mode, instrument.Flute())
+        "focus": instrument.ElectricPiano(),
+        "relax": instrument.Piano(),
+        "sleep": instrument.ElectricPiano()
+    }.get(mode, instrument.Bass())
     melody_part.insert(0, melody_instrument)
 
+    # Define scale (note choices) based on mode
     scale_map = {
-        "focus": ["C5", "D5", "E5", "F5", "G5", "A5", "B4"],
-        "relax": ["C5", "D5", "E5", "G5", "A5"],
-        "sleep": ["C5", "D5", "F5", "G5"]
+        "focus": ["C5", "D5", "E5", "F5", "G5", "A5", "B5"],           # Brighter, mid-high
+        "relax": ["C4", "D4", "E4", "G4", "A4"],                       # Gentle pentatonic
+        "sleep": ["B3", "C4", "D4", "F4", "G4"]      # Calm, soft flute range
     }
-    melody_notes = scale_map.get(mode, ["C5", "D5", "E5"])
+
+    melody_notes = scale_map.get(mode, ["C4", "D4", "E4", "G4"])  # Default fallback
+
 
     def generate_motif():
         return [random.choice(melody_notes) for _ in range(3)]
@@ -160,10 +125,9 @@ def generate_music(mode):
 
     for section_name in structure:
         motif = generate_motif()
-        bars = section_lengths.get(section_name, 16)
+        bars = section_lengths.get(section_name, 8)
         section_beats = bars * beats_per_bar
         melody_beats = 0
-
         while melody_beats < section_beats:
             phrase = random.choice([motif, vary_motif(motif), retrograde(motif)])
             for pitch in phrase:
@@ -177,9 +141,19 @@ def generate_music(mode):
     score.append(melody_part)
 
     timestamp = time.strftime("%Y%m%d_%H%M%S")
-    output_file = f"output/{mode}_composition_{timestamp}.mid"
+    output_file = f"{output_path}/{mode}_composition_{timestamp}.mid"
     mf = midi.translate.streamToMidiFile(score)
     mf.open(output_file, 'wb')
     mf.write()
     mf.close()
     return output_file
+
+# --- Mode-Specific Functions ---
+def generate_focus_music():
+    return generate_music("focus")
+
+def generate_relax_music():
+    return generate_music("relax")
+
+def generate_sleep_music():
+    return generate_music("sleep")
