@@ -1,156 +1,223 @@
 {
+
   "focus": {
+
     "tempo": 112,
-    "instruments": [
-      {
-        "name": "Electric Piano",
-        "style": "syncopated chords",
-        "chords": [
-          { "notes": ["C4", "E4", "G4", "B4"], "type": "maj7" },
-          { "notes": ["D4", "F4", "A4", "C5"], "type": "min7" },
-          { "notes": ["E4", "G4", "B4", "D5"], "type": "7" },
-          { "notes": ["F4", "A4", "C5", "E5"], "type": "maj9" },
-          { "notes": ["G4", "B4", "D5", "F5"], "type": "dom7" },
-          { "notes": ["A4", "C5", "E5", "G5"], "type": "min9" },
-          { "notes": ["B4", "D5", "F#5", "A5"], "type": "7sus4" }
-        ]
-      },
-      {
-        "name": "Synth Lead",
-        "style": "melodic riff",
-        "chords": [
-          { "notes": ["C5", "D5", "E5", "G5"], "type": "pentatonic" },
-          { "notes": ["D5", "F#5", "A5"], "type": "min" },
-          { "notes": ["E5", "G#5", "B5"], "type": "maj" },
-          { "notes": ["F5", "A5", "C6"], "type": "maj" },
-          { "notes": ["G5", "B5", "D6"], "type": "maj" }
-        ]
-      },
-      {
-        "name": "Electric Bass",
-        "style": "walking bass",
-        "chords": [
-          { "notes": ["C2", "G2"], "type": "root5" },
-          { "notes": ["D2", "A2"], "type": "root5" },
-          { "notes": ["E2", "B2"], "type": "root5" },
-          { "notes": ["F2", "C3"], "type": "root5" },
-          { "notes": ["G2", "D3"], "type": "root5" }
-        ]
-      },
-      {
-        "name": "Electric Guitar",
-        "style": "arpeggios",
-        "chords": [
-          { "notes": ["C4", "E4", "G4"], "type": "arp" },
-          { "notes": ["F4", "A4", "C5"], "type": "arp" },
-          { "notes": ["G4", "B4", "D5"], "type": "arp" }
-        ]
-      }
-    ],
-    "structure": [
-      "intro",
-      "groove",
-      "verse",
-      "chorus",
-      "bridge",
-      "drop",
-      "build",
-      "solo",
-      "outro",
-      "loop"
-    ]
-  },
 
-  "relax": {
-    "tempo": 68,
     "instruments": [
+
       {
-        "name": "Acoustic Guitar",
-        "style": "fingerpicking",
+
+        "name": "Guzheng",
+
+        "style": "plucked motifs",
+
         "chords": [
+
+          { "notes": ["C4", "G4", "A4"], "type": "pentatonic" },
+
+          { "notes": ["D4", "F4", "A4"], "type": "min" },
+
+          { "notes": ["E4", "G4", "B4"], "type": "maj" }
+
+        ]
+
+      },
+
+      {
+
+        "name": "Charango",
+
+        "style": "staccato rhythmic chords",
+
+        "chords": [
+
           { "notes": ["C4", "E4", "G4"], "type": "maj" },
-          { "notes": ["A3", "C4", "E4"], "type": "min" },
-          { "notes": ["F3", "A3", "C4"], "type": "maj" },
-          { "notes": ["G3", "B3", "D4"], "type": "maj" },
-          { "notes": ["D3", "F3", "A3"], "type": "min" },
-          { "notes": ["E3", "G3", "B3"], "type": "min" }
-        ]
-      },
-      {
-        "name": "Violin",
-        "style": "lush pads",
-        "chords": [
-          { "notes": ["C4", "G4", "E5"], "type": "maj7" },
-          { "notes": ["A3", "E4", "C5"], "type": "min7" },
-          { "notes": ["F3", "C4", "A4"], "type": "maj7" },
-          { "notes": ["D3", "A3", "F4"], "type": "min7" }
-        ]
-      },
-      {
-        "name": "Electric Piano",
-        "style": "slow chords",
-        "chords": [
-          { "notes": ["C4", "E4", "G4", "B4"], "type": "maj7" },
-          { "notes": ["D4", "F4", "A4", "C5"], "type": "min7" },
-          { "notes": ["E4", "G4", "B4", "D5"], "type": "7" }
-        ]
-      }
-    ],
-    "structure": [
-      "intro",
-      "verse",
-      "chorus",
-      "bridge",
-      "variation",
-      "layered_loop",
-      "fadeout"
-    ]
-  },
 
-  "sleep": {
-    "tempo": 48,
-    "instruments": [
-      {
-        "name": "Piano",
-        "style": "slow lullaby",
-        "chords": [
-          { "notes": ["C4", "E4", "G4", "B4"], "type": "maj7" },
-          { "notes": ["F4", "A4", "C5", "E5"], "type": "maj7" },
-          { "notes": ["G3", "B3", "D4", "F4"], "type": "min7" },
-          { "notes": ["A3", "C4", "E4", "G4"], "type": "min7" },
-          { "notes": ["D4", "F4", "A4", "C5"], "type": "min7" },
-          { "notes": ["E4", "G4", "B4", "D5"], "type": "7" }
+          { "notes": ["A3", "C4", "E4"], "type": "min" }
+
         ]
+
       },
+
       {
-        "name": "Hammond Organ",
-        "style": "slow ambient",
+
+        "name": "Reeds",
+
+        "style": "short melodic phrases",
+
         "chords": [
-          { "notes": ["C3", "G3", "C4"], "type": "drone" },
-          { "notes": ["F3", "C4", "F4"], "type": "drone" },
-          { "notes": ["G3", "D4", "G4"], "type": "drone" },
-          { "notes": ["A3", "E4", "A4"], "type": "drone" }
+
+          { "notes": ["D4", "F#4", "A4"], "type": "maj" },
+
+          { "notes": ["G4", "B4", "D5"], "type": "maj" }
+
         ]
-      },
-      {
-        "name": "Electric Bass",
-        "style": "long sustained",
-        "chords": [
-          { "notes": ["C1", "G1"], "type": "drone" },
-          { "notes": ["A1", "E2"], "type": "drone" },
-          { "notes": ["F1", "C2"], "type": "drone" }
-        ]
+
       }
+
     ],
+
     "structure": [
-      "intro",
-      "layer1",
-      "layer2",
-      "ambient_loop",
-      "dream_flow",
-      "bridge",
-      "fadeout",
-      "infinite_loop"
+
+      "intro_guzheng",
+
+      "charango_riff",
+
+      "reeds_phrase",
+
+      "guzheng_return",
+
+      "outro"
+
     ]
+
+  },
+ 
+  "relax": {
+
+    "tempo": 64,
+
+    "instruments": [
+
+      {
+
+        "name": "Harp",
+
+        "style": "slow arpeggios",
+
+        "chords": [
+
+          { "notes": ["C4", "E4", "G4"], "type": "maj" },
+
+          { "notes": ["F3", "A3", "C4"], "type": "maj" },
+
+          { "notes": ["D3", "F3", "A3"], "type": "min" }
+
+        ]
+
+      },
+
+      {
+
+        "name": "Charango",
+
+        "style": "gentle fingerpicking",
+
+        "chords": [
+
+          { "notes": ["A3", "C4", "E4"], "type": "min" },
+
+          { "notes": ["G3", "B3", "D4"], "type": "maj" }
+
+        ]
+
+      },
+
+      {
+
+        "name": "Reeds",
+
+        "style": "sustained soft pads",
+
+        "chords": [
+
+          { "notes": ["C4", "G4", "B4"], "type": "maj7" },
+
+          { "notes": ["D4", "A4", "C5"], "type": "min7" }
+
+        ]
+
+      }
+
+    ],
+
+    "structure": [
+
+      "intro_harp",
+
+      "charango_arpeggio",
+
+      "reeds_layer",
+
+      "harp_repeat",
+
+      "fadeout"
+
+    ]
+
+  },
+ 
+  "sleep": {
+
+    "tempo": 42,
+
+    "instruments": [
+
+      {
+
+        "name": "Piano",
+
+        "style": "fragmented sound bath",
+
+        "chords": [
+
+          { "notes": ["C4", "E4", "G4", "B4"], "type": "maj7" },
+
+          { "notes": ["A3", "C4", "E4", "G4"], "type": "min7" }
+
+        ]
+
+      },
+
+      {
+
+        "name": "Harp",
+
+        "style": "long glissando pulses",
+
+        "chords": [
+
+          { "notes": ["F4", "A4", "C5"], "type": "maj" },
+
+          { "notes": ["D4", "F4", "A4"], "type": "min" }
+
+        ]
+
+      },
+
+      {
+
+        "name": "Guzheng",
+
+        "style": "ambient drones",
+
+        "chords": [
+
+          { "notes": ["C3", "G3"], "type": "drone" },
+
+          { "notes": ["E3", "B3"], "type": "drone" }
+
+        ]
+
+      }
+
+    ],
+
+    "structure": [
+
+      "intro_piano",
+
+      "harp_flow",
+
+      "guzheng_drones",
+
+      "piano_return",
+
+      "infinite_fade"
+
+    ]
+
   }
+
 }
