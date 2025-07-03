@@ -1,10 +1,50 @@
 import os, time, json, shutil, random
 from music21 import stream, chord, note, instrument, tempo, metadata, midi
+import subprocess
 
 # --- Load Config ---
 def load_config(path="config.json"):
     with open(path, "r") as f:
         return json.load(f)
+
+
+def convert_midi_to_mp3(midi_path, soundfont_path="FluidR3_GM/FluidR3_GM.sf2", fluidsynth_path="fluidsynth/bin/fluidsynth.exe"):
+    if not os.path.isfile(midi_path):
+        raise FileNotFoundError(f"MIDI file not found: {midi_path}")
+    if not os.path.isfile(soundfont_path):
+        raise FileNotFoundError(f"SoundFont not found: {soundfont_path}")
+    if not os.path.isfile(fluidsynth_path):
+        raise FileNotFoundError(f"FluidSynth executable not found: {fluidsynth_path}")
+
+    # Define output paths
+    wav_path = midi_path.replace(".mid", ".wav")
+    mp3_path = midi_path.replace(".mid", ".mp3")
+
+    # Convert MIDI to WAV using FluidSynth
+    try:
+        subprocess.run([
+            fluidsynth_path,
+            "-ni", soundfont_path,
+            midi_path,
+            "-F", wav_path,
+            "-r", "44100"
+        ], check=True)
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"FluidSynth failed to convert MIDI: {e}")
+
+    # Convert WAV to MP3 using ffmpeg (with fade-in/out)
+    try:
+        subprocess.run([
+            "ffmpeg", "-y", "-i", wav_path,
+            "-af", "afade=t=in:ss=0:d=3,afade=t=out:st=5:d=5",
+            mp3_path
+        ], check=True)
+    finally:
+        if os.path.exists(wav_path):
+            os.remove(wav_path)
+
+    return mp3_path
+
 
 # --- Instrument Mapping ---
 def get_music21_instrument(name):
@@ -22,7 +62,6 @@ def get_music21_instrument(name):
         "Flute": instrument.Flute(),
         "Chill Guitar": instrument.AcousticGuitar(),
         "Electric Guitar": instrument.ElectricGuitar(),
-
     }
     return mapping.get(name, instrument.Instrument(name))
 
@@ -60,7 +99,6 @@ def generate_music(mode):
     score.append(tempo.MetronomeMark(number=bpm))
     score.insert(0, metadata.Metadata(title=f"Xenotune - {mode.title()} Mode"))
 
-    # --- Instrumental Parts ---
     for inst in instruments:
         part = stream.Part()
         part.insert(0, get_music21_instrument(inst["name"]))
@@ -93,10 +131,7 @@ def generate_music(mode):
 
         score.append(part)
 
-    # --- Melody Part ---
     melody_part = stream.Part()
-
-    # Select instrument based on mode
     melody_instrument = {
         "focus": instrument.ElectricPiano(),
         "relax": instrument.Piano(),
@@ -104,15 +139,12 @@ def generate_music(mode):
     }.get(mode, instrument.Bass())
     melody_part.insert(0, melody_instrument)
 
-    # Define scale (note choices) based on mode
     scale_map = {
-        "focus": ["C5", "D5", "E5", "F5", "G5", "A5", "B5"],           # Brighter, mid-high
-        "relax": ["C4", "D4", "E4", "G4", "A4"],                       # Gentle pentatonic
-        "sleep": ["B3", "C4", "D4", "F4", "G4"]      # Calm, soft flute range
+        "focus": ["C5", "D5", "E5", "F5", "G5", "A5", "B5"],
+        "relax": ["C4", "D4", "E4", "G4", "A4"],
+        "sleep": ["B3", "C4", "D4", "F4", "G4"]
     }
-
-    melody_notes = scale_map.get(mode, ["C4", "D4", "E4", "G4"])  # Default fallback
-
+    melody_notes = scale_map.get(mode, ["C4", "D4", "E4", "G4"])
 
     def generate_motif():
         return [random.choice(melody_notes) for _ in range(3)]
@@ -141,12 +173,14 @@ def generate_music(mode):
     score.append(melody_part)
 
     timestamp = time.strftime("%Y%m%d_%H%M%S")
-    output_file = f"{output_path}/{mode}_composition_{timestamp}.mid"
+    midi_file = f"{output_path}/{mode}_composition_{timestamp}.mid"
     mf = midi.translate.streamToMidiFile(score)
-    mf.open(output_file, 'wb')
+    mf.open(midi_file, 'wb')
     mf.write()
     mf.close()
-    return output_file
+
+    mp3_file = convert_midi_to_mp3(midi_file)
+    return mp3_file
 
 # --- Mode-Specific Functions ---
 def generate_focus_music():

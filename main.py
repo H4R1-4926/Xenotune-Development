@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import os
 
-from music_gen import generate_focus_music, generate_relax_music, generate_sleep_music
+from music_gen import generate_focus_music, generate_relax_music, generate_sleep_music, convert_midi_to_mp3
 
 app = FastAPI()
 
@@ -37,20 +37,23 @@ async def home(request: Request):
 # --- Music Endpoints ---
 @app.get("/generate/focus")
 async def generate_focus():
-    path = generate_focus_music()
-    last_files["focus"] = os.path.basename(path)
+    midi_path = generate_focus_music()
+    mp3_path = convert_midi_to_mp3(midi_path)
+    last_files["focus"] = os.path.basename(mp3_path)
     return {"filename": last_files["focus"]}
 
 @app.get("/generate/relax")
 async def generate_relax():
-    path = generate_relax_music()
-    last_files["relax"] = os.path.basename(path)
+    midi_path = generate_relax_music()
+    mp3_path = convert_midi_to_mp3(midi_path)
+    last_files["relax"] = os.path.basename(mp3_path)
     return {"filename": last_files["relax"]}
 
 @app.get("/generate/sleep")
 async def generate_sleep():
-    path = generate_sleep_music()
-    last_files["sleep"] = os.path.basename(path)
+    midi_path = generate_sleep_music()
+    mp3_path = convert_midi_to_mp3(midi_path)
+    last_files["sleep"] = os.path.basename(mp3_path)
     return {"filename": last_files["sleep"]}
 
 @app.get("/play/{mode}")
@@ -58,5 +61,5 @@ async def play_music(mode: str):
     filename = last_files.get(mode)
     if filename:
         path = os.path.join("output", filename)
-        return FileResponse(path, media_type="audio/midi", filename=filename)
+        return FileResponse(path, media_type="audio/mpeg", filename=filename)
     return {"error": "No file generated yet. Click generate first."}
