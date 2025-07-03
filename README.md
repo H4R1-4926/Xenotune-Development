@@ -1,4 +1,4 @@
-# 🎶 Xenotune AI Music Generator (FastAPI Backend)
+# 🎶 Xenotune AI Music Generator
 
 This project is the backend for the **Xenotune AI Music Generator**, an intelligent ambient music creation tool using Python’s `music21` library. It supports mood-based music generation: **Focus**, **Relax**, and **Sleep**. Built using FastAPI, it is lightweight, scalable, and integrates easily with a Flutter frontend.
 
