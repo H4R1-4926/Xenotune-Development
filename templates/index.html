@@ -1,30 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Xenotune AI Music Generator</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
-        button {
-            padding: 12px 24px;
-            margin: 15px;
-            font-size: 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        h1 { color: #333; }
-    </style>
+    <title>Xenotune Generator</title>
 </head>
 <body>
-    <h1>Xenotune AI Music Generator 🎶</h1>
-    <p>Click a button to generate and download AI music in MIDI format.</p>
-    <button onclick="window.location.href='/generate/focus'">🎯 Focus Mode</button>
-    <button onclick="window.location.href='/generate/relax'">🌿 Relax Mode</button>
-    <button onclick="window.location.href='/generate/sleep'">🌙 Sleep Mode</button>
+    <h1>Xenotune AI Music Generator</h1>
+
+    <div>
+        <h2>Focus</h2>
+        <button onclick="generate('focus')">Generate</button>
+        <audio id="focusAudio" controls style="display:none;"></audio>
+    </div>
+
+    <div>
+        <h2>Relax</h2>
+        <button onclick="generate('relax')">Generate</button>
+        <audio id="relaxAudio" controls style="display:none;"></audio>
+    </div>
+
+    <div>
+        <h2>Sleep</h2>
+        <button onclick="generate('sleep')">Generate</button>
+        <audio id="sleepAudio" controls style="display:none;"></audio>
+    </div>
+
+    <script>
+        async function generate(mode) {
+            const res = await fetch(`/generate/${mode}`);
+            const data = await res.json();
+            if (data.filename) {
+                const audio = document.getElementById(mode + "Audio");
+                audio.src = `/output/${data.filename}`;
+                audio.style.display = "inline-block";
+                audio.load();
+                audio.play();
+            }
+        }
+    </script>
 </body>
 </html>
