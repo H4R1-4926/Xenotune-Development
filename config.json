@@ -1,223 +1,67 @@
 {
-
   "focus": {
-
     "tempo": 112,
-
     "instruments": [
-
       {
-
         "name": "Guzheng",
-
         "style": "plucked motifs",
-
-        "chords": [
-
-          { "notes": ["C4", "G4", "A4"], "type": "pentatonic" },
-
-          { "notes": ["D4", "F4", "A4"], "type": "min" },
-
-          { "notes": ["E4", "G4", "B4"], "type": "maj" }
-
-        ]
-
+        "notes": ["C4", "D4", "E4", "G4", "A4"]
       },
-
       {
-
         "name": "Charango",
-
         "style": "staccato rhythmic chords",
-
-        "chords": [
-
-          { "notes": ["C4", "E4", "G4"], "type": "maj" },
-
-          { "notes": ["A3", "C4", "E4"], "type": "min" }
-
-        ]
-
+        "notes": ["A3", "C4", "E4", "G4"]
       },
-
       {
-
         "name": "Reeds",
-
         "style": "short melodic phrases",
-
-        "chords": [
-
-          { "notes": ["D4", "F#4", "A4"], "type": "maj" },
-
-          { "notes": ["G4", "B4", "D5"], "type": "maj" }
-
-        ]
-
+        "notes": ["D4", "E4", "G4", "A4", "C5"]
       }
-
     ],
-
-    "structure": [
-
-      "intro_guzheng",
-
-      "charango_riff",
-
-      "reeds_phrase",
-
-      "guzheng_return",
-
-      "outro"
-
-    ]
-
+    "structure": ["intro", "groove", "verse", "chorus", "outro"]
   },
- 
+
   "relax": {
-
     "tempo": 64,
-
     "instruments": [
-
       {
-
         "name": "Harp",
-
         "style": "slow arpeggios",
-
-        "chords": [
-
-          { "notes": ["C4", "E4", "G4"], "type": "maj" },
-
-          { "notes": ["F3", "A3", "C4"], "type": "maj" },
-
-          { "notes": ["D3", "F3", "A3"], "type": "min" }
-
-        ]
-
+        "notes": ["A3", "C4", "D4", "E4", "G4"]
       },
-
       {
-
         "name": "Charango",
-
         "style": "gentle fingerpicking",
-
-        "chords": [
-
-          { "notes": ["A3", "C4", "E4"], "type": "min" },
-
-          { "notes": ["G3", "B3", "D4"], "type": "maj" }
-
-        ]
-
+        "notes": ["D3", "A3", "C4", "E4", "G4"]
       },
-
       {
-
         "name": "Reeds",
-
         "style": "sustained soft pads",
-
-        "chords": [
-
-          { "notes": ["C4", "G4", "B4"], "type": "maj7" },
-
-          { "notes": ["D4", "A4", "C5"], "type": "min7" }
-
-        ]
-
+        "notes": ["C4", "D4", "E4", "G4", "A4", "C5"]
       }
-
     ],
-
-    "structure": [
-
-      "intro_harp",
-
-      "charango_arpeggio",
-
-      "reeds_layer",
-
-      "harp_repeat",
-
-      "fadeout"
-
-    ]
-
+    "structure": ["intro", "ambient_loop", "verse", "variation", "fadeout"]
   },
- 
+
   "sleep": {
-
     "tempo": 42,
-
     "instruments": [
-
       {
-
         "name": "Piano",
-
         "style": "fragmented sound bath",
-
-        "chords": [
-
-          { "notes": ["C4", "E4", "G4", "B4"], "type": "maj7" },
-
-          { "notes": ["A3", "C4", "E4", "G4"], "type": "min7" }
-
-        ]
-
+        "notes": ["C3", "E3", "G3", "B3", "D4"]
       },
-
       {
-
         "name": "Harp",
-
         "style": "long glissando pulses",
-
-        "chords": [
-
-          { "notes": ["F4", "A4", "C5"], "type": "maj" },
-
-          { "notes": ["D4", "F4", "A4"], "type": "min" }
-
-        ]
-
+        "notes": ["F3", "A3", "C4", "D4", "G4"]
       },
-
       {
-
         "name": "Guzheng",
-
         "style": "ambient drones",
-
-        "chords": [
-
-          { "notes": ["C3", "G3"], "type": "drone" },
-
-          { "notes": ["E3", "B3"], "type": "drone" }
-
-        ]
-
+        "notes": ["C2", "E2", "G2", "A2", "B2"]
       }
-
     ],
-
-    "structure": [
-
-      "intro_piano",
-
-      "harp_flow",
-
-      "guzheng_drones",
-
-      "piano_return",
-
-      "infinite_fade"
-
-    ]
-
+    "structure": ["intro", "dream_flow", "ambient_loop", "layered_loop", "infinite_loop"]
   }
-
 }
