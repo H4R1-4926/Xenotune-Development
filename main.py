@@ -9,38 +9,54 @@ from music_gen import generate_focus_music, generate_relax_music, generate_sleep
 
 app = FastAPI()
 
-# CORS middleware for API + Flutter compatibility
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Update to your frontend origin if needed
+    allow_origins=["*"],  # Replace with frontend origin if needed
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Static and templates setup
+# Static + Templates
 app.mount("/output", StaticFiles(directory="output"), name="output")
 templates = Jinja2Templates(directory="templates")
 
-# HTML Home Page
+# Global paths for last generated files
+last_files = {
+    "focus": None,
+    "relax": None,
+    "sleep": None
+}
+
+# HTML Home
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-# Generate Focus MIDI
+# --- Music Endpoints ---
 @app.get("/generate/focus")
 async def generate_focus():
-    midi_path = generate_focus_music()
-    return FileResponse(midi_path, media_type="audio/midi", filename=os.path.basename(midi_path))
+    path = generate_focus_music()
+    last_files["focus"] = os.path.basename(path)
+    return {"filename": last_files["focus"]}
 
-# Generate Relax MIDI
 @app.get("/generate/relax")
 async def generate_relax():
-    midi_path = generate_relax_music()
-    return FileResponse(midi_path, media_type="audio/midi", filename=os.path.basename(midi_path))
+    path = generate_relax_music()
+    last_files["relax"] = os.path.basename(path)
+    return {"filename": last_files["relax"]}
 
-# Generate Sleep MIDI
 @app.get("/generate/sleep")
 async def generate_sleep():
-    midi_path = generate_sleep_music()
-    return FileResponse(midi_path, media_type="audio/midi", filename=os.path.basename(midi_path))
+    path = generate_sleep_music()
+    last_files["sleep"] = os.path.basename(path)
+    return {"filename": last_files["sleep"]}
+
+@app.get("/play/{mode}")
+async def play_music(mode: str):
+    filename = last_files.get(mode)
+    if filename:
+        path = os.path.join("output", filename)
+        return FileResponse(path, media_type="audio/midi", filename=filename)
+    return {"error": "No file generated yet. Click generate first."}
