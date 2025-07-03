@@ -97,5 +97,5 @@ This project is licensed under the MIT License. You are free to use, modify, and
 
 ## ✨ Credits
 
-Developed with ❤️ by Sanjay S  
+Developed with ❤️ by Sanjay & Abi 
 Powered by FastAPI & music21
