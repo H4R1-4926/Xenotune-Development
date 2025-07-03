@@ -9,11 +9,20 @@ def load_config(path="config.json"):
 # --- Instrument Mapping ---
 def get_music21_instrument(name):
     mapping = {
-        "Guzheng": instrument.AcousticGuitar(),
-        "Charango": instrument.Mandolin(),
-        "Reeds": instrument.Clarinet(),
-        "Harp": instrument.Harp(),
-        "Piano": instrument.ElectricPiano(),
+        "Electric Piano": instrument.ElectricPiano(),
+        "Synth Lead": instrument.SopranoSaxophone(),
+        "Bass Guitar": instrument.ElectricBass(),
+        "Drum Kit": instrument.Woodblock(),
+        "Arpeggiator": instrument.Harpsichord(),
+        "Acoustic Guitar": instrument.AcousticGuitar(),
+        "Soft Strings": instrument.Violin(),
+        "Felt Piano": instrument.Piano(),
+        "Air Pad": instrument.ElectricOrgan(),
+        "Sub Bass": instrument.Contrabass(),
+        "Flute": instrument.Flute(),
+        "Chill Guitar": instrument.AcousticGuitar(),
+        "Electric Guitar": instrument.ElectricGuitar(),
+
     }
     return mapping.get(name, instrument.Instrument(name))
 
@@ -41,7 +50,7 @@ def generate_music(mode):
         "layer2": 8, "ambient_loop": 16, "dream_flow": 8, "infinite_loop": 16
     }
 
-    beats_per_bar = 1
+    beats_per_bar = 4
     output_path = "output"
     if os.path.exists(output_path):
         shutil.rmtree(output_path)
@@ -56,52 +65,54 @@ def generate_music(mode):
         part = stream.Part()
         part.insert(0, get_music21_instrument(inst["name"]))
         style = inst.get("style", "")
-        notes = inst.get("notes", ["C4", "E4", "G4"])
+        notes = inst.get("notes", ["B3", "D4", "F4"])
 
         for section_name in structure:
             bars = section_lengths.get(section_name, 8)
             section_beats = bars * beats_per_bar
             beats = 0
             while beats < section_beats:
-                if "slow" in style or "sustained" in style or "ambient" in style:
-                    c = chord.Chord(notes, quarterLength=2.0)
-                    c.volume.velocity = 20
+                if "slow" in style or "sustained" in style:
+                    c = chord.Chord(notes, quarterLength=0.8)
+                    c.volume.velocity = 10
                     part.append(c)
                     beats += 2
-                elif "arp" in style or "plucked" in style or "fingerpicking" in style:
+                elif "arpeggiator" in style or "arp" in style:
                     for n in notes:
                         nt = note.Note(n, quarterLength=0.5)
-                        nt.volume.velocity = 15
+                        nt.volume.velocity = 9
                         part.append(nt)
                         beats += 0.5
                         if beats >= section_beats:
                             break
                 else:
                     c = chord.Chord(notes, quarterLength=1.0)
-                    c.volume.velocity = 20
+                    c.volume.velocity = 15
                     part.append(c)
-                    beats += 1.0
+                    beats += 2.0
 
         score.append(part)
 
     # --- Melody Part ---
     melody_part = stream.Part()
 
+    # Select instrument based on mode
     melody_instrument = {
         "focus": instrument.ElectricPiano(),
-        "relax": instrument.Flute(),
-        "sleep": instrument.Clarinet()
-    }.get(mode, instrument.Piano())
+        "relax": instrument.Piano(),
+        "sleep": instrument.ElectricPiano()
+    }.get(mode, instrument.Bass())
     melody_part.insert(0, melody_instrument)
 
-    # Mode-specific scales
+    # Define scale (note choices) based on mode
     scale_map = {
-        "focus": ["C4", "D4", "E4", "G4", "A4", "C5", "D5", "E5", "G5", "A5"],
-        "relax": ["A3", "B3", "C4", "D4", "E4", "G4", "A4", "B4", "C5", "D5"],
-        "sleep": ["C3", "D3", "E3", "F3", "G3", "A3", "B3", "C4"]
+        "focus": ["C5", "D5", "E5", "F5", "G5", "A5", "B5"],           # Brighter, mid-high
+        "relax": ["C4", "D4", "E4", "G4", "A4"],                       # Gentle pentatonic
+        "sleep": ["B3", "C4", "D4", "F4", "G4"]      # Calm, soft flute range
     }
 
-    melody_notes = scale_map.get(mode, ["C4", "E4", "G4"])
+    melody_notes = scale_map.get(mode, ["C4", "D4", "E4", "G4"])  # Default fallback
+
 
     def generate_motif():
         return [random.choice(melody_notes) for _ in range(3)]
@@ -120,9 +131,8 @@ def generate_music(mode):
         while melody_beats < section_beats:
             phrase = random.choice([motif, vary_motif(motif), retrograde(motif)])
             for pitch in phrase:
-                length = random.choice([1.0, 2.0]) if mode == "focus" else random.choice([2.0, 4.0])
+                length = random.choice([0.5, 1.0]) if mode == "focus" else random.choice([1.0, 2.0])
                 n = note.Note(pitch, quarterLength=length)
-                n.volume.velocity = 30
                 melody_part.append(n)
                 melody_beats += length
                 if melody_beats >= section_beats:
@@ -138,7 +148,7 @@ def generate_music(mode):
     mf.close()
     return output_file
 
-# --- Mode Functions ---
+# --- Mode-Specific Functions ---
 def generate_focus_music():
     return generate_music("focus")
 
