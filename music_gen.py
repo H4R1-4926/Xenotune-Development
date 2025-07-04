@@ -154,7 +154,7 @@ def generate_music(mode):
 # --- MIDI to MP3 using FluidSynth + FFmpeg ---
 def convert_midi_to_mp3(
     midi_path,
-    soundfont_path= r"assets\FluidR3_GM.sf2",
+    soundfont_path= r"FluidR3_GM\FluidR3_GM.sf2",
     fluidsynth_path= r"fluidsynth\bin\fluidsynth.exe"
 ):
     if not os.path.isfile(midi_path):
@@ -183,7 +183,7 @@ def convert_midi_to_mp3(
     try:
         subprocess.run([
             "ffmpeg", "-y", "-i", wav_path,
-            "-af", "afade=t=in:ss=0:d=3,afade=t=out:st=5:d=5",
+            # "-af", "afade=t=in:ss=0:d=3,afade=t=out:st=5:d=5",
             mp3_path
         ], check=True)
     finally:
