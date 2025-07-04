@@ -1,65 +1,35 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, HTMLResponse
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import os
-
-from music_gen import generate_focus_music, generate_relax_music, generate_sleep_music, convert_midi_to_mp3
+from music_gen import generate_focus_music, generate_relax_music, generate_sleep_music
 
 app = FastAPI()
 
-# CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Replace with frontend origin if needed
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Static + Templates
-app.mount("/output", StaticFiles(directory="output"), name="output")
-templates = Jinja2Templates(directory="templates")
-
-# Global paths for last generated files
-last_files = {
-    "focus": None,
-    "relax": None,
-    "sleep": None
-}
-
-# HTML Home
+# Root Route
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
+    templates = Jinja2Templates(directory="templates")
     return templates.TemplateResponse("index.html", {"request": request})
 
-# --- Music Endpoints ---
+# Generate Focus Music
 @app.get("/generate/focus")
 async def generate_focus():
-    midi_path = generate_focus_music()
-    mp3_path = convert_midi_to_mp3(midi_path)
-    last_files["focus"] = os.path.basename(mp3_path)
-    return {"filename": last_files["focus"]}
+    file_path = generate_focus_music()
+    filename = os.path.basename(file_path)
+    return FileResponse(path=file_path, filename=filename, media_type="audio/mpeg")
 
+# Generate Relax Music
 @app.get("/generate/relax")
 async def generate_relax():
-    midi_path = generate_relax_music()
-    mp3_path = convert_midi_to_mp3(midi_path)
-    last_files["relax"] = os.path.basename(mp3_path)
-    return {"filename": last_files["relax"]}
+    file_path = generate_relax_music()
+    filename = os.path.basename(file_path)
+    return FileResponse(path=file_path, filename=filename, media_type="audio/mpeg")
 
+# Generate Sleep Music
 @app.get("/generate/sleep")
 async def generate_sleep():
-    midi_path = generate_sleep_music()
-    mp3_path = convert_midi_to_mp3(midi_path)
-    last_files["sleep"] = os.path.basename(mp3_path)
-    return {"filename": last_files["sleep"]}
-
-@app.get("/play/{mode}")
-async def play_music(mode: str):
-    filename = last_files.get(mode)
-    if filename:
-        path = os.path.join("output", filename)
-        return FileResponse(path, media_type="audio/mpeg", filename=filename)
-    return {"error": "No file generated yet. Click generate first."}
+    file_path = generate_sleep_music()
+    filename = os.path.basename(file_path)
+    return FileResponse(path=file_path, filename=filename, media_type="audio/mpeg")

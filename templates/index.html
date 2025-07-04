@@ -1,41 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Xenotune Generator</title>
+    <title>Xenotune AI Music Generator</title>
 </head>
 <body>
-    <h1>Xenotune AI Music Generator</h1>
-
-    <div>
-        <h2>Focus</h2>
-        <button onclick="generate('focus')">Generate</button>
-        <audio id="focusAudio" controls style="display:none;"></audio>
-    </div>
-
-    <div>
-        <h2>Relax</h2>
-        <button onclick="generate('relax')">Generate</button>
-        <audio id="relaxAudio" controls style="display:none;"></audio>
-    </div>
-
-    <div>
-        <h2>Sleep</h2>
-        <button onclick="generate('sleep')">Generate</button>
-        <audio id="sleepAudio" controls style="display:none;"></audio>
-    </div>
-
-    <script>
-        async function generate(mode) {
-            const res = await fetch(`/generate/${mode}`);
-            const data = await res.json();
-            if (data.filename) {
-                const audio = document.getElementById(mode + "Audio");
-                audio.src = `/output/${data.filename}`;
-                audio.style.display = "inline-block";
-                audio.load();
-                audio.play();
-            }
-        }
-    </script>
+    <h1>🎵 Xenotune AI Music Generator</h1>
+    <button onclick="window.location.href='/generate/focus'">🎯 Generate Focus Music</button><br><br>
+    <button onclick="window.location.href='/generate/relax'">🌿 Generate Relax Music</button><br><br>
+    <button onclick="window.location.href='/generate/sleep'">🌙 Generate Sleep Music</button>
 </body>
 </html>
