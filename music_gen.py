@@ -7,45 +7,6 @@ def load_config(path="config.json"):
     with open(path, "r") as f:
         return json.load(f)
 
-
-def convert_midi_to_mp3(midi_path, soundfont_path="FluidR3_GM/FluidR3_GM.sf2", fluidsynth_path="fluidsynth/bin/fluidsynth.exe"):
-    if not os.path.isfile(midi_path):
-        raise FileNotFoundError(f"MIDI file not found: {midi_path}")
-    if not os.path.isfile(soundfont_path):
-        raise FileNotFoundError(f"SoundFont not found: {soundfont_path}")
-    if not os.path.isfile(fluidsynth_path):
-        raise FileNotFoundError(f"FluidSynth executable not found: {fluidsynth_path}")
-
-    # Define output paths
-    wav_path = midi_path.replace(".mid", ".wav")
-    mp3_path = midi_path.replace(".mid", ".mp3")
-
-    # Convert MIDI to WAV using FluidSynth
-    try:
-        subprocess.run([
-            fluidsynth_path,
-            "-ni", soundfont_path,
-            midi_path,
-            "-F", wav_path,
-            "-r", "44100"
-        ], check=True)
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"FluidSynth failed to convert MIDI: {e}")
-
-    # Convert WAV to MP3 using ffmpeg (with fade-in/out)
-    try:
-        subprocess.run([
-            "ffmpeg", "-y", "-i", wav_path,
-            "-af", "afade=t=in:ss=0:d=3,afade=t=out:st=5:d=5",
-            mp3_path
-        ], check=True)
-    finally:
-        if os.path.exists(wav_path):
-            os.remove(wav_path)
-
-    return mp3_path
-
-
 # --- Instrument Mapping ---
 def get_music21_instrument(name):
     mapping = {
@@ -181,6 +142,43 @@ def generate_music(mode):
 
     mp3_file = convert_midi_to_mp3(midi_file)
     return mp3_file
+
+def convert_midi_to_mp3(midi_path, soundfont_path=r"FluidR3_GM\\FluidR3_GM.sf2", fluidsynth_path=r"fluidsynth\\bin\\fluidsynth.exe"):
+    if not os.path.isfile(midi_path):
+        raise FileNotFoundError(f"MIDI file not found: {midi_path}")
+    if not os.path.isfile(soundfont_path):
+        raise FileNotFoundError(f"SoundFont not found: {soundfont_path}")
+    if not os.path.isfile(fluidsynth_path):
+        raise FileNotFoundError(f"FluidSynth executable not found: {fluidsynth_path}")
+
+    # Define output paths
+    wav_path = midi_path.replace(".mid", ".wav")
+    mp3_path = midi_path.replace(".mid", ".mp3")
+
+    # Convert MIDI to WAV using FluidSynth
+    try:
+        subprocess.run([
+            fluidsynth_path,
+            "-ni", soundfont_path,
+            midi_path,
+            "-F", wav_path,
+            "-r", "44100"
+        ], check=True)
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"FluidSynth failed to convert MIDI: {e}")
+
+    # Convert WAV to MP3 using ffmpeg (with fade-in/out)
+    try:
+        subprocess.run([
+            "ffmpeg", "-y", "-i", wav_path,
+            "-af", "afade=t=in:ss=0:d=3,afade=t=out:st=5:d=5",
+            mp3_path
+        ], check=True)
+    finally:
+        if os.path.exists(wav_path):
+            os.remove(wav_path)
+
+    return mp3_path
 
 # --- Mode-Specific Functions ---
 def generate_focus_music():
