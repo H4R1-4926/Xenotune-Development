@@ -1,67 +1,65 @@
 {
   "focus": {
-    "tempo": 112,
+    "tempo": 105,
     "instruments": [
       {
-        "name": "Guzheng",
-        "style": "plucked motifs",
-        "notes": ["C4", "D4", "E4", "G4", "A4"]
+        "name": "Electric Piano",
+        "notes": ["C4", "E4", "G4", "A4"],
+        "style": "chords_arp"
       },
       {
-        "name": "Charango",
-        "style": "staccato rhythmic chords",
-        "notes": ["A3", "C4", "E4", "G4"]
+        "name": "Bass Guitar",
+        "notes": ["C2", "G2"],
+        "style": "bass"
       },
       {
-        "name": "Reeds",
-        "style": "short melodic phrases",
-        "notes": ["D4", "E4", "G4", "A4", "C5"]
+        "name": "Arpeggiator",
+        "notes": ["C5", "E5", "G5"],
+        "style": "arpeggio"
       }
     ],
-    "structure": ["intro", "groove", "verse", "chorus", "outro"]
+    "structure": ["intro", "loop", "layered_loop", "fadeout"]
   },
-
   "relax": {
-    "tempo": 64,
+    "tempo": 80,
     "instruments": [
       {
+        "name": "Acoustic Guitar",
+        "notes": ["D3", "F#3", "A3", "B3"],
+        "style": "sustained_chords"
+      },
+      {
+        "name": "Flute",
+        "notes": ["D4", "F#4", "A4"],
+        "style": "melodic"
+      },
+      {
         "name": "Harp",
-        "style": "slow arpeggios",
-        "notes": ["A3", "C4", "D4", "E4", "G4"]
-      },
-      {
-        "name": "Charango",
-        "style": "gentle fingerpicking",
-        "notes": ["D3", "A3", "C4", "E4", "G4"]
-      },
-      {
-        "name": "Reeds",
-        "style": "sustained soft pads",
-        "notes": ["C4", "D4", "E4", "G4", "A4", "C5"]
+        "notes": ["D5", "A5", "B5"],
+        "style": "slow_arp"
       }
     ],
-    "structure": ["intro", "ambient_loop", "verse", "variation", "fadeout"]
+    "structure": ["intro", "groove", "verse", "variation", "outro"]
   },
-
   "sleep": {
-    "tempo": 42,
+    "tempo": 60,
     "instruments": [
       {
-        "name": "Piano",
-        "style": "fragmented sound bath",
-        "notes": ["C3", "E3", "G3", "B3", "D4"]
+        "name": "Felt Piano",
+        "notes": ["B2", "D3", "F#3", "A3"],
+        "style": "slow_chords"
       },
       {
-        "name": "Harp",
-        "style": "long glissando pulses",
-        "notes": ["F3", "A3", "C4", "D4", "G4"]
+        "name": "Air Pad",
+        "notes": ["B3", "E4", "A4"],
+        "style": "ambient"
       },
       {
-        "name": "Guzheng",
-        "style": "ambient drones",
-        "notes": ["C2", "E2", "G2", "A2", "B2"]
+        "name": "Soft Strings",
+        "notes": ["G3", "B3", "D4"],
+        "style": "ambient"
       }
     ],
-    "structure": ["intro", "dream_flow", "ambient_loop", "layered_loop", "infinite_loop"]
+    "structure": ["intro", "ambient_loop", "dream_flow", "fadeout"]
   }
 }

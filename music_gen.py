@@ -7,48 +7,13 @@ def load_config(path="config.json"):
     with open(path, "r") as f:
         return json.load(f)
 
-
-def convert_midi_to_mp3(midi_path, soundfont_path="FluidR3_GM/FluidR3_GM.sf2", fluidsynth_path="fluidsynth/bin/fluidsynth.exe"):
-    if not os.path.isfile(midi_path):
-        raise FileNotFoundError(f"MIDI file not found: {midi_path}")
-    if not os.path.isfile(soundfont_path):
-        raise FileNotFoundError(f"SoundFont not found: {soundfont_path}")
-    if not os.path.isfile(fluidsynth_path):
-        raise FileNotFoundError(f"FluidSynth executable not found: {fluidsynth_path}")
-
-    # Define output paths
-    wav_path = midi_path.replace(".mid", ".wav")
-    mp3_path = midi_path.replace(".mid", ".mp3")
-
-    # Convert MIDI to WAV using FluidSynth
-    try:
-        subprocess.run([
-            fluidsynth_path,
-            "-ni", soundfont_path,
-            midi_path,
-            "-F", wav_path,
-            "-r", "44100"
-        ], check=True)
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"FluidSynth failed to convert MIDI: {e}")
-
-    # Convert WAV to MP3 using ffmpeg (with fade-in/out)
-    try:
-        subprocess.run([
-            "ffmpeg", "-y", "-i", wav_path,
-            "-af", "afade=t=in:ss=0:d=3,afade=t=out:st=5:d=5",
-            mp3_path
-        ], check=True)
-    finally:
-        if os.path.exists(wav_path):
-            os.remove(wav_path)
-
-    return mp3_path
-
-
 # --- Instrument Mapping ---
 def get_music21_instrument(name):
     mapping = {
+        "Charango": instrument.Mandolin(),
+        "Reeds": instrument.EnglishHorn(),
+        "Harp": instrument.Harp(),
+        "Piano": instrument.Piano(),
         "Electric Piano": instrument.ElectricPiano(),
         "Synth Lead": instrument.SopranoSaxophone(),
         "Bass Guitar": instrument.ElectricBass(),
@@ -65,7 +30,7 @@ def get_music21_instrument(name):
     }
     return mapping.get(name, instrument.Instrument(name))
 
-# --- Section Generator ---
+# --- Section Generator (optional if needed later) ---
 def generate_section(name, bars):
     s = stream.Stream()
     for _ in range(bars):
@@ -74,7 +39,7 @@ def generate_section(name, bars):
         s.append(m)
     return s
 
-# --- Main Generator ---
+# --- Music Generator ---
 def generate_music(mode):
     config = load_config()
     mode_data = config[mode]
@@ -99,6 +64,7 @@ def generate_music(mode):
     score.append(tempo.MetronomeMark(number=bpm))
     score.insert(0, metadata.Metadata(title=f"Xenotune - {mode.title()} Mode"))
 
+    # --- Background Instruments ---
     for inst in instruments:
         part = stream.Part()
         part.insert(0, get_music21_instrument(inst["name"]))
@@ -110,12 +76,12 @@ def generate_music(mode):
             section_beats = bars * beats_per_bar
             beats = 0
             while beats < section_beats:
-                if "slow" in style or "sustained" in style:
-                    c = chord.Chord(notes, quarterLength=0.8)
+                if "slow" in style or "sustained" in style or "ambient" in style:
+                    c = chord.Chord(notes, quarterLength=2.0)
                     c.volume.velocity = 10
                     part.append(c)
                     beats += 2
-                elif "arpeggiator" in style or "arp" in style:
+                elif "arp" in style or "arpeggio" in style:
                     for n in notes:
                         nt = note.Note(n, quarterLength=0.5)
                         nt.volume.velocity = 9
@@ -127,16 +93,17 @@ def generate_music(mode):
                     c = chord.Chord(notes, quarterLength=1.0)
                     c.volume.velocity = 15
                     part.append(c)
-                    beats += 2.0
+                    beats += 1.0
 
         score.append(part)
 
+    # --- Melody Line ---
     melody_part = stream.Part()
     melody_instrument = {
         "focus": instrument.ElectricPiano(),
         "relax": instrument.Piano(),
         "sleep": instrument.ElectricPiano()
-    }.get(mode, instrument.Bass())
+    }.get(mode, instrument.Piano())
     melody_part.insert(0, melody_instrument)
 
     scale_map = {
@@ -172,6 +139,7 @@ def generate_music(mode):
 
     score.append(melody_part)
 
+    # --- Export MIDI File ---
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     midi_file = f"{output_path}/{mode}_composition_{timestamp}.mid"
     mf = midi.translate.streamToMidiFile(score)
@@ -179,10 +147,52 @@ def generate_music(mode):
     mf.write()
     mf.close()
 
+    # --- Convert to MP3 ---
     mp3_file = convert_midi_to_mp3(midi_file)
     return mp3_file
 
-# --- Mode-Specific Functions ---
+# --- MIDI to MP3 using FluidSynth + FFmpeg ---
+def convert_midi_to_mp3(
+    midi_path,
+    soundfont_path= r"assets\FluidR3_GM.sf2",
+    fluidsynth_path= r"fluidsynth\bin\fluidsynth.exe"
+):
+    if not os.path.isfile(midi_path):
+        raise FileNotFoundError(f"MIDI file not found: {midi_path}")
+    if not os.path.isfile(soundfont_path):
+        raise FileNotFoundError(f"SoundFont not found: {soundfont_path}")
+    if not os.path.isfile(fluidsynth_path):
+        raise FileNotFoundError(f"FluidSynth not found: {fluidsynth_path}")
+
+    wav_path = midi_path.replace(".mid", ".wav")
+    mp3_path = midi_path.replace(".mid", ".mp3")
+
+    # Convert MIDI to WAV using FluidSynth
+    try:
+        subprocess.run([
+            fluidsynth_path,
+            "-ni", soundfont_path,
+            midi_path,
+            "-F", wav_path,
+            "-r", "44100"
+        ], check=True)
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"FluidSynth failed: {e}")
+
+    # Convert WAV to MP3 using ffmpeg with fade-in/out
+    try:
+        subprocess.run([
+            "ffmpeg", "-y", "-i", wav_path,
+            "-af", "afade=t=in:ss=0:d=3,afade=t=out:st=5:d=5",
+            mp3_path
+        ], check=True)
+    finally:
+        if os.path.exists(wav_path):
+            os.remove(wav_path)
+
+    return mp3_path
+
+# --- Mode Shortcuts ---
 def generate_focus_music():
     return generate_music("focus")
 
