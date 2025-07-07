@@ -171,7 +171,7 @@ def convert_midi_to_mp3(
     fluidsynth_path="fluidsynth/bin/fluidsynth.exe",
     ffmpeg_path="ffmpeg/bin/ffmpeg.exe",
     bgm_path="assets/bgm.mp3",
-    music_volume="4.0",
+    music_volume="0.5",
     bgm_volume="0.2"
 ):
     if not os.path.isfile(midi_path):
