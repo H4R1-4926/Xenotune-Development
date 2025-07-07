@@ -155,7 +155,8 @@ def generate_music(mode):
 def convert_midi_to_mp3(
     midi_path,
     soundfont_path="FluidR3_GM/FluidR3_GM.sf2",
-    fluidsynth_path="fluidsynth/bin/fluidsynth.exe"
+    fluidsynth_path="fluidsynth/bin/fluidsynth.exe",
+    ffmpeg_path=os.path.join("ffmpeg", "bin", "ffmpeg.exe")
 ):
     if not os.path.isfile(midi_path):
         raise FileNotFoundError(f"MIDI file not found: {midi_path}")
@@ -163,7 +164,8 @@ def convert_midi_to_mp3(
         raise FileNotFoundError(f"SoundFont not found: {soundfont_path}")
     if not os.path.isfile(fluidsynth_path):
         raise FileNotFoundError(f"FluidSynth not found: {fluidsynth_path}")
-
+    if not os.path.isfile(ffmpeg_path):
+        raise FileNotFoundError(f"ffmpeg not found: {ffmpeg_path}")
     wav_path = midi_path.replace(".mid", ".wav")
     mp3_path = midi_path.replace(".mid", ".mp3")
 
