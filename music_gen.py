@@ -1,6 +1,11 @@
-import os, time, json, shutil, random
-from music21 import stream, chord, note, instrument, tempo, metadata, midi
+import os
+import time
+import json
+import shutil
+import random
 import subprocess
+import pygame
+from music21 import stream, chord, note, instrument, tempo, metadata, midi
 
 # --- Load Config ---
 def load_config(path="config.json"):
@@ -27,17 +32,9 @@ def get_music21_instrument(name):
         "Flute": instrument.Flute(),
         "Chill Guitar": instrument.AcousticGuitar(),
         "Electric Guitar": instrument.ElectricGuitar(),
+
     }
     return mapping.get(name, instrument.Instrument(name))
-
-# --- Section Generator (optional if needed later) ---
-def generate_section(name, bars):
-    s = stream.Stream()
-    for _ in range(bars):
-        m = stream.Measure()
-        m.append(note.Rest(quarterLength=4.0))
-        s.append(m)
-    return s
 
 # --- Music Generator ---
 def generate_music(mode):
@@ -51,7 +48,9 @@ def generate_music(mode):
         "intro": 4, "groove": 8, "verse": 8, "chorus": 8, "bridge": 8,
         "drop": 8, "build": 8, "solo": 8, "outro": 4, "loop": 16,
         "variation": 8, "layered_loop": 8, "fadeout": 4, "layer1": 8,
-        "layer2": 8, "ambient_loop": 16, "dream_flow": 8, "infinite_loop": 16
+        "layer2": 8, "ambient_loop": 16, "dream_flow": 8, "infinite_loop": 16,
+        "loop_a": 8, "focus_block": 8, "pause_fill": 4, "soothing_loop": 16,
+        "deep_layer": 8, "dream_pad": 8
     }
 
     beats_per_bar = 4
@@ -66,6 +65,8 @@ def generate_music(mode):
 
     # --- Background Instruments ---
     for inst in instruments:
+        if "samples" in inst:
+            continue  # Skip ambient samples in MIDI
         part = stream.Part()
         part.insert(0, get_music21_instrument(inst["name"]))
         style = inst.get("style", "")
@@ -94,7 +95,6 @@ def generate_music(mode):
                     c.volume.velocity = 15
                     part.append(c)
                     beats += 1.0
-
         score.append(part)
 
     # --- Melody Line ---
@@ -151,11 +151,11 @@ def generate_music(mode):
     mp3_file = convert_midi_to_mp3(midi_file)
     return mp3_file
 
-# --- MIDI to MP3 using FluidSynth + FFmpeg ---
+# --- MIDI to MP3 Conversion ---
 def convert_midi_to_mp3(
     midi_path,
-    soundfont_path= r"assets\FluidR3_GM.sf2",
-    fluidsynth_path= r"fluidsynth\bin\fluidsynth.exe"
+    soundfont_path="FluidR3_GM/FluidR3_GM.sf2",
+    fluidsynth_path="fluidsynth/bin/fluidsynth.exe"
 ):
     if not os.path.isfile(midi_path):
         raise FileNotFoundError(f"MIDI file not found: {midi_path}")
@@ -167,25 +167,15 @@ def convert_midi_to_mp3(
     wav_path = midi_path.replace(".mid", ".wav")
     mp3_path = midi_path.replace(".mid", ".mp3")
 
-    # Convert MIDI to WAV using FluidSynth
     try:
         subprocess.run([
-            fluidsynth_path,
-            "-ni", soundfont_path,
-            midi_path,
-            "-F", wav_path,
-            "-r", "44100"
+            fluidsynth_path, "-ni", soundfont_path, midi_path, "-F", wav_path, "-r", "44100"
         ], check=True)
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"FluidSynth failed: {e}")
 
-    # Convert WAV to MP3 using ffmpeg with fade-in/out
     try:
-        subprocess.run([
-            "ffmpeg", "-y", "-i", wav_path,
-            "-af", "afade=t=in:ss=0:d=3,afade=t=out:st=5:d=5",
-            mp3_path
-        ], check=True)
+        subprocess.run(["ffmpeg", "-y", "-i", wav_path, mp3_path], check=True)
     finally:
         if os.path.exists(wav_path):
             os.remove(wav_path)
@@ -201,3 +191,18 @@ def generate_relax_music():
 
 def generate_sleep_music():
     return generate_music("sleep")
+
+# --- Infinite Backend Playback Loop ---
+def generate_and_play_loop(mode="focus"):
+    pygame.mixer.init()
+    print(f"🔁 Playing continuous music: {mode.upper()}")
+    try:
+        while True:
+            mp3 = generate_music(mode)
+            print(f"🎵 Now playing: {mp3}")
+            pygame.mixer.music.load(mp3)
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy():
+                pygame.time.Clock().tick(10)
+    except KeyboardInterrupt:
+        print("\n⏹️  Stopped continuous music loop by user.")
