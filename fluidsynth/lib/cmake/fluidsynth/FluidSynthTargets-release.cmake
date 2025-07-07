@@ -17,12 +17,12 @@ list(APPEND _cmake_import_check_files_for_FluidSynth::fluidsynth "${_IMPORT_PREF
 # Import target "FluidSynth::libfluidsynth" for configuration "Release"
 set_property(TARGET FluidSynth::libfluidsynth APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(FluidSynth::libfluidsynth PROPERTIES
-  IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "C;CXX;RC"
-  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/libfluidsynth-3.a"
+  IMPORTED_IMPLIB_RELEASE "${_IMPORT_PREFIX}/lib/libfluidsynth-3.lib"
+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/bin/libfluidsynth-3.dll"
   )
 
 list(APPEND _cmake_import_check_targets FluidSynth::libfluidsynth )
-list(APPEND _cmake_import_check_files_for_FluidSynth::libfluidsynth "${_IMPORT_PREFIX}/lib/libfluidsynth-3.a" )
+list(APPEND _cmake_import_check_files_for_FluidSynth::libfluidsynth "${_IMPORT_PREFIX}/lib/libfluidsynth-3.lib" "${_IMPORT_PREFIX}/bin/libfluidsynth-3.dll" )
 
 # Commands beyond this point should not need to know the version.
 set(CMAKE_IMPORT_FILE_VERSION)

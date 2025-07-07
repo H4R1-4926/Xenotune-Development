@@ -59,18 +59,17 @@ endif()
 add_library(FluidSynth::libfluidsynth-OBJ INTERFACE IMPORTED)
 
 set_target_properties(FluidSynth::libfluidsynth-OBJ PROPERTIES
-  INTERFACE_LINK_LIBRARIES "dsound;ksuser;winmm;winmm;ksuser;ole32;ws2_32;Threads::Threads;OpenMP::OpenMP_C;GLib2::glib-2;GLib2::gthread-2;SndFile::sndfile;InstPatch::libinstpatch"
+  INTERFACE_LINK_LIBRARIES "dsound;ksuser;winmm;winmm;ksuser;ole32;ws2_32;Threads::Threads;GLib2::glib-2;GLib2::gthread-2;SndFile::sndfile;InstPatch::libinstpatch;SDL3::SDL3-shared"
 )
 
 # Create imported target FluidSynth::fluidsynth
 add_executable(FluidSynth::fluidsynth IMPORTED)
 
 # Create imported target FluidSynth::libfluidsynth
-add_library(FluidSynth::libfluidsynth STATIC IMPORTED)
+add_library(FluidSynth::libfluidsynth SHARED IMPORTED)
 
 set_target_properties(FluidSynth::libfluidsynth PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:FluidSynth::libfluidsynth-OBJ>"
 )
 
 # Load information for each installed configuration.
