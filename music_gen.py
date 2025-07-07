@@ -158,6 +158,7 @@ def convert_midi_to_mp3(
     fluidsynth_path="fluidsynth/bin/fluidsynth.exe",
     ffmpeg_path=os.path.join("ffmpeg", "bin", "ffmpeg.exe")
 ):
+
     if not os.path.isfile(midi_path):
         raise FileNotFoundError(f"MIDI file not found: {midi_path}")
     if not os.path.isfile(soundfont_path):
@@ -177,7 +178,7 @@ def convert_midi_to_mp3(
         raise RuntimeError(f"FluidSynth failed: {e}")
 
     try:
-        subprocess.run(["ffmpeg", "-y", "-i", wav_path, mp3_path], check=True)
+        subprocess.run(["ffmpeg_path", "-y", "-i", wav_path, mp3_path], check=True, capture_output=True, text=True)
     finally:
         if os.path.exists(wav_path):
             os.remove(wav_path)
