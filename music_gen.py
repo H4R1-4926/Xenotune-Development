@@ -78,21 +78,21 @@ def generate_music(mode):
             beats = 0
             while beats < section_beats:
                 if "slow" in style or "sustained" in style or "ambient" in style:
-                    c = chord.Chord(notes, quarterLength=2.0)
-                    c.volume.velocity = 10
+                    c = chord.Chord(notes, quarterLength=1.0)
+                    c.volume.velocity = 20
                     part.append(c)
                     beats += 2
                 elif "arp" in style or "arpeggio" in style:
                     for n in notes:
                         nt = note.Note(n, quarterLength=0.5)
-                        nt.volume.velocity = 9
+                        nt.volume.velocity = 15
                         part.append(nt)
                         beats += 0.5
                         if beats >= section_beats:
                             break
                 else:
-                    c = chord.Chord(notes, quarterLength=1.0)
-                    c.volume.velocity = 15
+                    c = chord.Chord(notes, quarterLength=0.5)
+                    c.volume.velocity = 25
                     part.append(c)
                     beats += 1.0
         score.append(part)
@@ -102,7 +102,7 @@ def generate_music(mode):
     melody_instrument = {
         "focus": instrument.ElectricPiano(),
         "relax": instrument.Piano(),
-        "sleep": instrument.ElectricPiano()
+        "sleep": instrument.Piano()
     }.get(mode, instrument.Piano())
     melody_part.insert(0, melody_instrument)
 
@@ -156,9 +156,9 @@ def convert_midi_to_mp3(
     midi_path,
     soundfont_path="FluidR3_GM/FluidR3_GM.sf2",
     fluidsynth_path="fluidsynth/bin/fluidsynth.exe",
-    ffmpeg_path=os.path.join("ffmpeg", "bin", "ffmpeg.exe")
+    ffmpeg_path="ffmpeg/bin/ffmpeg.exe",
+    bgm_path="assets/bgm.mp3"
 ):
-
     if not os.path.isfile(midi_path):
         raise FileNotFoundError(f"MIDI file not found: {midi_path}")
     if not os.path.isfile(soundfont_path):
@@ -167,23 +167,41 @@ def convert_midi_to_mp3(
         raise FileNotFoundError(f"FluidSynth not found: {fluidsynth_path}")
     if not os.path.isfile(ffmpeg_path):
         raise FileNotFoundError(f"ffmpeg not found: {ffmpeg_path}")
+    if not os.path.isfile(bgm_path):
+        raise FileNotFoundError(f"BGM file not found: {bgm_path}")
+
     wav_path = midi_path.replace(".mid", ".wav")
     mp3_path = midi_path.replace(".mid", ".mp3")
+    final_mix = midi_path.replace(".mid", "_mixed.mp3")
 
-    try:
-        subprocess.run([
-            fluidsynth_path, "-ni", soundfont_path, midi_path, "-F", wav_path, "-r", "44100"
-        ], check=True)
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"FluidSynth failed: {e}")
+    # Convert MIDI to WAV using FluidSynth
+    subprocess.run([
+        fluidsynth_path, "-ni", soundfont_path, midi_path, "-F", wav_path, "-r", "44100"
+    ], check=True)
 
-    try:
-        subprocess.run(["ffmpeg_path", "-y", "-i", wav_path, mp3_path], check=True, capture_output=True, text=True)
-    finally:
-        if os.path.exists(wav_path):
-            os.remove(wav_path)
+    # Convert WAV to MP3
+    subprocess.run([
+        ffmpeg_path, "-y", "-i", wav_path, mp3_path
+    ], check=True, capture_output=True, text=True)
 
-    return mp3_path
+    # Mix generated MP3 with BGM
+    subprocess.run([
+        ffmpeg_path, "-y",
+        "-i", mp3_path,
+        "-i", bgm_path,
+        "-filter_complex",
+        "[0:a]volume=0.8[a0];[1:a]volume=1.5[a1];[a0][a1]amix=inputs=2:duration=first:dropout_transition=2",
+        "-c:a", "libmp3lame",
+        final_mix
+    ], check=True, capture_output=True, text=True)
+
+
+    # Clean up
+    if os.path.exists(wav_path): os.remove(wav_path)
+    if os.path.exists(mp3_path): os.remove(mp3_path)
+
+    return final_mix
+
 
 # --- Mode Shortcuts ---
 def generate_focus_music():
@@ -198,14 +216,25 @@ def generate_sleep_music():
 # --- Infinite Backend Playback Loop ---
 def generate_and_play_loop(mode="focus"):
     pygame.mixer.init()
-    print(f"🔁 Playing continuous music: {mode.upper()}")
+    current_mode = mode
+    print(f"🔁 Playing continuous music: {current_mode.upper()}")
+
     try:
         while True:
-            mp3 = generate_music(mode)
+            if current_mode != mode:
+                print(f"🔄 Switching mode to: {mode.upper()}")
+                current_mode = mode
+                pygame.mixer.music.stop()  # Stop previous music
+
+            mp3 = generate_music(current_mode)
             print(f"🎵 Now playing: {mp3}")
             pygame.mixer.music.load(mp3)
             pygame.mixer.music.play()
+
             while pygame.mixer.music.get_busy():
                 pygame.time.Clock().tick(10)
+                # Add a small delay or mode check here if needed to switch mode externally
+
     except KeyboardInterrupt:
         print("\n⏹️  Stopped continuous music loop by user.")
+        pygame.mixer.music.stop()
