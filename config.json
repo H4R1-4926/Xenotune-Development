@@ -1,6 +1,6 @@
 {
   "focus": {
-    "tempo": 105,
+    "tempo": 108,
     "instruments": [
       {
         "name": "Electric Piano",
@@ -9,19 +9,20 @@
       },
       {
         "name": "Bass Guitar",
-        "notes": ["C2", "G2"],
+        "notes": ["C2", "E2", "G2", "A2"],
         "style": "bass"
       },
       {
         "name": "Arpeggiator",
-        "notes": ["C5", "E5", "G5"],
+        "notes": ["C5", "E5", "G5", "A5"],
         "style": "arpeggio"
       }
     ],
-    "structure": ["intro", "loop", "layered_loop", "fadeout"]
+    "structure": ["intro", "loop", "variation", "layered_loop", "fadeout"]
   },
+
   "relax": {
-    "tempo": 80,
+    "tempo": 78,
     "instruments": [
       {
         "name": "Acoustic Guitar",
@@ -30,17 +31,18 @@
       },
       {
         "name": "Flute",
-        "notes": ["D4", "F#4", "A4"],
+        "notes": ["D4", "E4", "F#4", "A4"],
         "style": "melodic"
       },
       {
         "name": "Harp",
-        "notes": ["D5", "A5", "B5"],
+        "notes": ["D5", "F#5", "A5", "B5"],
         "style": "slow_arp"
       }
     ],
     "structure": ["intro", "groove", "verse", "variation", "outro"]
   },
+
   "sleep": {
     "tempo": 60,
     "instruments": [
