@@ -143,6 +143,12 @@ def convert_midi_to_mp3(
     soundfont_path="FluidR3_GM/FluidR3_GM.sf2",
     fluidsynth_path="fluidsynth/bin/fluidsynth.exe"
 ):
+    fluidsynth_path="fluidsynth/bin/fluidsynth.exe",
+    ffmpeg_path="ffmpeg/bin/ffmpeg.exe",
+    bgm_path="assets/bgm.mp3",
+    music_volume="2.0",
+    bgm_volume="0.6"
+    ):
     if not os.path.isfile(midi_path):
         raise FileNotFoundError(f"MIDI file not found: {midi_path}")
     if not os.path.isfile(soundfont_path):
@@ -190,5 +196,25 @@ def generate_and_play_loop(mode="focus"):
             pygame.mixer.music.play()
             while pygame.mixer.music.get_busy():
                 pygame.time.Clock().tick(10)
+    bgm_channel = pygame.mixer.Channel(0)
+    music_channel = pygame.mixer.Channel(1)
+
+    print(f"🔁 Starting infinite music loop in {mode.upper()} mode...")
+
+    bgm_path = "assets/bgm.mp3"
+    bgm_sound = pygame.mixer.Sound(bgm_path)
+    bgm_sound.set_volume(0.6)
+    bgm_channel.play(bgm_sound, loops=-1)
+
+    try:
+        while True:
+            mp3 = generate_music(mode)
+            print(f"🎼 Generated and playing: {mp3}")
+            music_sound = pygame.mixer.Sound(mp3)
+            music_sound.set_volume(2.0)
+            music_channel.play(music_sound)
+
+            while music_channel.get_busy():
+                pygame.time.wait(100)
     except KeyboardInterrupt:
         print("\n⏹️  Stopped continuous music loop by user.")
