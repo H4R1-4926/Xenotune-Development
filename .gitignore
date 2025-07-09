@@ -1,0 +1,67 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# VS Code
+.vscode/
+
+# Environment variables
+.env
+*.env
+
+# macOS / Linux / Windows system files
+.DS_Store
+Thumbs.db
+
+# PyInstaller / build outputs
+build/
+dist/
+*.spec
+
+# Logs and caches
+*.log
+*.sqlite3
+*.db
+*.pkl
+*.h5
+.cache/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Test coverage reports
+htmlcov/
+coverage.xml
+.cache
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# TensorBoard logs
+logs/
+events.out.*
+
+# Python Poetry, Pipenv
+Pipfile.lock
+poetry.lock
+
+# MyPy, Pyright, Pyre
+.mypy_cache/
+.pyright/
+.pyre/
+
+# Git LFS metadata
+.gitattributes.lock
+
+# IDEs
+.idea/
+*.iml
+
+# Ignore local secrets
+secrets/
