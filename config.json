@@ -4,21 +4,24 @@
     "instruments": [
       {
         "name": "Electric Piano",
-        "notes": ["C4", "E4", "G4", "A4"],
-        "style": "chords_arp"
+        "notes": ["C4", "E4", "G4", "A4", "B4"],
+        "style": "chords_arp",
+        "volume": 0.6
       },
       {
         "name": "Bass Guitar",
-        "notes": ["C2", "E2", "G2", "A2"],
-        "style": "bass"
+        "notes": ["C2", "E2", "G2", "A2", "B1"],
+        "style": "bass_pulse",
+        "volume": 0.5
       },
       {
         "name": "Arpeggiator",
-        "notes": ["C5", "E5", "G5", "A5"],
-        "style": "arpeggio"
+        "notes": ["C5", "D5", "E5", "G5", "A5"],
+        "style": "arpeggio_fast",
+        "volume": 0.4
       }
     ],
-    "structure": ["intro", "loop", "variation", "layered_loop", "fadeout"]
+    "structure": ["intro", "focus_block", "layered_loop", "variation", "pause_fill", "fadeout"]
   },
 
   "relax": {
@@ -26,21 +29,24 @@
     "instruments": [
       {
         "name": "Acoustic Guitar",
-        "notes": ["D3", "F#3", "A3", "B3"],
-        "style": "sustained_chords"
+        "notes": ["D3", "F#3", "A3", "B3", "C#4"],
+        "style": "sustained_chords",
+        "volume": 0.5
       },
       {
         "name": "Flute",
-        "notes": ["D4", "E4", "F#4", "A4"],
-        "style": "melodic"
+        "notes": ["D4", "E4", "F#4", "G4", "A4"],
+        "style": "melodic_slow",
+        "volume": 0.4
       },
       {
         "name": "Harp",
         "notes": ["D5", "F#5", "A5", "B5"],
-        "style": "slow_arp"
+        "style": "soft_arp",
+        "volume": 0.3
       }
     ],
-    "structure": ["intro", "groove", "verse", "variation", "outro"]
+    "structure": ["intro", "groove", "verse", "variation", "layered_loop", "outro"]
   },
 
   "sleep": {
@@ -48,20 +54,23 @@
     "instruments": [
       {
         "name": "Felt Piano",
-        "notes": ["B2", "D3", "F#3", "A3"],
-        "style": "slow_chords"
+        "notes": ["B2", "D3", "F#3", "A3", "C#4"],
+        "style": "slow_chords",
+        "volume": 0.5
       },
       {
         "name": "Air Pad",
-        "notes": ["B3", "E4", "A4"],
-        "style": "ambient"
+        "notes": ["B3", "E4", "A4", "C#5"],
+        "style": "ambient_pad",
+        "volume": 0.3
       },
       {
         "name": "Soft Strings",
-        "notes": ["G3", "B3", "D4"],
-        "style": "ambient"
+        "notes": ["G3", "B3", "D4", "F#4"],
+        "style": "ambient_string",
+        "volume": 0.3
       }
     ],
-    "structure": ["intro", "ambient_loop", "dream_flow", "fadeout"]
+    "structure": ["intro", "ambient_loop", "dream_flow", "variation", "fadeout"]
   }
 }

@@ -1,3 +1,5 @@
+# music_gen.py
+
 import os
 import time
 import json
@@ -8,12 +10,14 @@ import pygame
 from music21 import stream, chord, note, instrument, tempo, metadata, midi
 from ai_note_gen import generate_lstm_notes_for_mode
 
-# --- Load Config ---
+
+# --------------------- Config Loader ---------------------
 def load_config(path="config.json"):
     with open(path, "r") as f:
         return json.load(f)
 
-# --- Instrument Mapping ---
+
+# --------------------- Instrument Mapper ---------------------
 def get_music21_instrument(name):
     mapping = {
         "Charango": instrument.Mandolin(),
@@ -34,17 +38,17 @@ def get_music21_instrument(name):
         "Chill Guitar": instrument.AcousticGuitar(),
         "Electric Guitar": instrument.ElectricGuitar(),
         "Meditative Flute": instrument.PanFlute(),
-
     }
     return mapping.get(name, instrument.Instrument(name))
 
-# --- Music Generator ---
+
+# --------------------- Generate Music ---------------------
 def generate_music(mode):
     config = load_config()
     mode_data = config[mode]
     bpm = mode_data["tempo"]
     instruments = mode_data["instruments"]
-    structure = mode_data["structure"]
+    structure = random.sample(mode_data["structure"], len(mode_data["structure"]))  # shuffle structure
 
     section_lengths = {
         "intro": 4, "groove": 8, "verse": 8, "chorus": 8, "bridge": 8,
@@ -57,29 +61,26 @@ def generate_music(mode):
 
     beats_per_bar = 4
     output_path = "output"
-    if os.path.exists(output_path):
-        shutil.rmtree(output_path)
     os.makedirs(output_path, exist_ok=True)
 
     score = stream.Score()
     score.append(tempo.MetronomeMark(number=bpm))
     score.insert(0, metadata.Metadata(title=f"Xenotune - {mode.title()} Mode"))
 
-    # --- Background Instruments ---
     for inst in instruments:
         if "samples" in inst:
             continue
         part = stream.Part()
         part.insert(0, get_music21_instrument(inst["name"]))
         style = inst.get("style", "")
-        notes = inst.get("notes", ["B3", "D4", "F4"])
+        notes = inst.get("notes", ["C4", "E4", "G4"])
 
         for section_name in structure:
             bars = section_lengths.get(section_name, 8)
             section_beats = bars * beats_per_bar
             beats = 0
             while beats < section_beats:
-                if "slow" in style or "sustained" in style or "ambient" in style:
+                if "ambient" in style or "slow" in style:
                     c = chord.Chord(notes, quarterLength=2.0)
                     c.volume.velocity = 10
                     part.append(c)
@@ -99,24 +100,19 @@ def generate_music(mode):
                     beats += 1.0
         score.append(part)
 
-    # --- Melody Line ---
+    # --- LSTM Melody Generation ---
     melody_part = stream.Part()
-    melody_instrument = {
-        "focus": instrument.ElectricPiano(),
-        "relax": instrument.Piano(),
-        "sleep": instrument.Piano()
-    }.get(mode, instrument.Piano())
-    melody_part.insert(0, melody_instrument)
+    melody_part.insert(0, get_music21_instrument({
+        "focus": "Electric Piano", "relax": "Piano", "sleep": "Felt Piano"
+    }.get(mode, "Piano")))
 
     for section_name in structure:
         bars = section_lengths.get(section_name, 8)
         section_beats = bars * beats_per_bar
         melody_beats = 0
-
         lstm_melody = generate_lstm_notes_for_mode(mode, num_new_notes=int(section_beats))
-
         for pitch in lstm_melody:
-            length = random.choice([0.5, 1.0]) if mode == "focus" else random.choice([1.0, 2.0])
+            length = random.choice([0.5, 1.0, 1.5]) if mode == "focus" else random.choice([1.0, 2.0])
             n = note.Note(pitch, quarterLength=length)
             melody_part.append(n)
             melody_beats += length
@@ -125,96 +121,63 @@ def generate_music(mode):
 
     score.append(melody_part)
 
-    # --- Export MIDI File ---
-    timestamp = time.strftime("%Y%m%d_%H%M%S")
-    midi_file = f"{output_path}/{mode}_composition_{timestamp}.mid"
+    # --- Export MIDI ---
+    timestamp = time.strftime("%H%M%S")
+    midi_file = f"{output_path}/{mode}_{timestamp}.mid"
     mf = midi.translate.streamToMidiFile(score)
     mf.open(midi_file, 'wb')
     mf.write()
     mf.close()
 
-    # --- Convert to MP3 ---
-    mp3_file = convert_midi_to_mp3(midi_file)
-    return mp3_file
+    return convert_midi_to_mp3(midi_file)
 
-# --- MIDI to MP3 Conversion ---
+
+# --------------------- Convert MIDI to MP3 ---------------------
 def convert_midi_to_mp3(
     midi_path,
     soundfont_path="FluidR3_GM/FluidR3_GM.sf2",
-    fluidsynth_path="fluidsynth/bin/fluidsynth.exe"
-):
     fluidsynth_path="fluidsynth/bin/fluidsynth.exe",
-    ffmpeg_path="ffmpeg/bin/ffmpeg.exe",
-    bgm_path="assets/bgm.mp3",
-    music_volume="2.0",
-    bgm_volume="0.6"
-    ):
-    if not os.path.isfile(midi_path):
-        raise FileNotFoundError(f"MIDI file not found: {midi_path}")
-    if not os.path.isfile(soundfont_path):
-        raise FileNotFoundError(f"SoundFont not found: {soundfont_path}")
-    if not os.path.isfile(fluidsynth_path):
-        raise FileNotFoundError(f"FluidSynth not found: {fluidsynth_path}")
+    ffmpeg_path="ffmpeg/bin/ffmpeg.exe"
+):
+    if not os.path.exists(midi_path):
+        raise FileNotFoundError(f"File not found: {midi_path}")
 
     wav_path = midi_path.replace(".mid", ".wav")
     mp3_path = midi_path.replace(".mid", ".mp3")
 
-    try:
-        subprocess.run([
-            fluidsynth_path, "-ni", soundfont_path, midi_path, "-F", wav_path, "-r", "44100"
-        ], check=True)
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"FluidSynth failed: {e}")
+    subprocess.run([fluidsynth_path, "-ni", soundfont_path, midi_path, "-F", wav_path, "-r", "44100"], check=True)
+    subprocess.run([ffmpeg_path, "-y", "-i", wav_path, mp3_path], check=True)
 
-    try:
-        subprocess.run(["ffmpeg", "-y", "-i", wav_path, mp3_path], check=True)
-    finally:
-        if os.path.exists(wav_path):
-            os.remove(wav_path)
-
+    os.remove(wav_path) if os.path.exists(wav_path) else None
     return mp3_path
 
-# --- Mode Shortcuts ---
-def generate_focus_music():
-    return generate_music("focus")
 
-def generate_relax_music():
-    return generate_music("relax")
-
-def generate_sleep_music():
-    return generate_music("sleep")
-
-# --- Infinite Backend Playback Loop ---
-def generate_and_play_loop(mode="focus"):
+# --------------------- Infinite Loop Playback ---------------------
+def generate_and_play_loop(mode="focus", music_vol=0.6, bgm_vol=0.2):
+    print(f"\n🔁 Starting Xenotune in {mode.upper()} mode...")
     pygame.mixer.init()
-    print(f"🔁 Playing continuous music: {mode.upper()}")
-    try:
-        while True:
-            mp3 = generate_music(mode)
-            print(f"🎵 Now playing: {mp3}")
-            pygame.mixer.music.load(mp3)
-            pygame.mixer.music.play()
-            while pygame.mixer.music.get_busy():
-                pygame.time.Clock().tick(10)
     bgm_channel = pygame.mixer.Channel(0)
     music_channel = pygame.mixer.Channel(1)
 
-    print(f"🔁 Starting infinite music loop in {mode.upper()} mode...")
-
     bgm_path = "assets/bgm.mp3"
-    bgm_sound = pygame.mixer.Sound(bgm_path)
-    bgm_sound.set_volume(0.6)
-    bgm_channel.play(bgm_sound, loops=-1)
+    if os.path.exists(bgm_path):
+        bgm_sound = pygame.mixer.Sound(bgm_path)
+        bgm_sound.set_volume(bgm_vol)
+        bgm_channel.play(bgm_sound, loops=-1)
 
     try:
         while True:
             mp3 = generate_music(mode)
-            print(f"🎼 Generated and playing: {mp3}")
-            music_sound = pygame.mixer.Sound(mp3)
-            music_sound.set_volume(2.0)
-            music_channel.play(music_sound)
+            print(f"🎧 Now playing: {mp3}")
+            music = pygame.mixer.Sound(mp3)
+            music.set_volume(music_vol)
+            music_channel.play(music, fade_ms=2000)
 
             while music_channel.get_busy():
-                pygame.time.wait(100)
+                pygame.time.wait(500)
+
     except KeyboardInterrupt:
-        print("\n⏹️  Stopped continuous music loop by user.")
+        print("\n⏹️ Stopped by user.")
+        bgm_channel.stop()
+        music_channel.stop()
+        pygame.mixer.quit()
