@@ -3,7 +3,6 @@
 import os
 import time
 import json
-import shutil
 import random
 import subprocess
 import pygame
