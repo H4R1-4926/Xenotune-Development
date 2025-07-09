@@ -152,7 +152,7 @@ def convert_midi_to_mp3(
 
 
 # --------------------- Infinite Loop Playback ---------------------
-def generate_and_play_loop(mode="focus", music_vol=0.6, bgm_vol=0.2):
+def generate_and_play_loop(mode="focus", music_vol=0.4, bgm_vol=0.2):
     print(f"\n🔁 Starting Xenotune in {mode.upper()} mode...")
     pygame.mixer.init()
     bgm_channel = pygame.mixer.Channel(0)
