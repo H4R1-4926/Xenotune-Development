@@ -5,6 +5,8 @@ import shutil
 import random
 import subprocess
 import pygame
+import atexit
+import threading
 from music21 import stream, chord, note, instrument, tempo, metadata, midi
 
 # Load configuration
@@ -163,8 +165,8 @@ def convert_midi_to_mp3(
     fluidsynth_path="fluidsynth/bin/fluidsynth.exe",
     ffmpeg_path="ffmpeg/bin/ffmpeg.exe",
     bgm_path="assets/bgm.mp3",
-    music_volume="2.0",
-    bgm_volume="0.6"
+    music_volume="1.0",
+    bgm_volume="0.5"
 ):
     if not os.path.isfile(midi_path):
         raise FileNotFoundError(f"MIDI file not found: {midi_path}")
@@ -199,7 +201,10 @@ def generate_relax_music(): return generate_music("relax")
 def generate_sleep_music(): return generate_music("sleep")
 
 # Infinite Player
+stop_thread = False
+
 def generate_and_play_loop(mode="focus"):
+    global stop_thread
     pygame.mixer.init()
     bgm_channel = pygame.mixer.Channel(0)
     music_channel = pygame.mixer.Channel(1)
@@ -207,15 +212,19 @@ def generate_and_play_loop(mode="focus"):
     print(f"🔁 Starting infinite music loop in {mode.upper()} mode...")
 
     bgm_path = "assets/bgm.mp3"
+    if not os.path.exists(bgm_path):
+        print(f"❌ Background music file not found: {bgm_path}")
+        return
+
     bgm_sound = pygame.mixer.Sound(bgm_path)
     bgm_sound.set_volume(0.6)
     bgm_channel.play(bgm_sound, loops=-1)
 
     try:
-        while True:
+        while not stop_thread:
             mp3 = generate_music(mode)
             if not mp3 or not os.path.exists(mp3):
-                print("⚠️ Failed to generate music. Retrying...")
+                print("⚠️ Failed to generate music. Retrying in 2 seconds...")
                 time.sleep(2)
                 continue
 
@@ -224,11 +233,28 @@ def generate_and_play_loop(mode="focus"):
             music_sound.set_volume(2.0)
             music_channel.play(music_sound)
 
-            while music_channel.get_busy():
+            while music_channel.get_busy() and not stop_thread:
                 pygame.time.wait(100)
-    except KeyboardInterrupt:
-        print("🛑 Music loop stopped by user.")
+
+    except Exception as e:
+        print(f"❌ Error in music loop: {e}")
+
+    finally:
+        print("🛑 Stopping music loop and cleaning up...")
         music_channel.stop()
         bgm_channel.stop()
         pygame.mixer.quit()
+
+
+def cleanup():
+    global stop_thread
+    stop_thread = True
+    print("🧹 Cleanup triggered. Music loop will stop.")
+
+atexit.register(cleanup)
+
+if __name__ == "__main__":
+
+    music_thread = threading.Thread(target=generate_and_play_loop, args=("focus",))
+    music_thread.start()
 
