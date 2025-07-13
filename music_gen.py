@@ -5,6 +5,8 @@ import shutil
 import random
 import subprocess
 import pygame
+import atexit
+import threading
 from music21 import stream, chord, note, instrument, tempo, metadata, midi
 
 # Load configuration
@@ -12,7 +14,7 @@ def load_config(path="config.json"):
     with open(path, "r") as f:
         return json.load(f)
 
-# Map instrument name to music21 instrument
+# Instrument Mapping
 def get_music21_instrument(name):
     mapping = {
         "Charango": instrument.Mandolin(),
@@ -54,8 +56,8 @@ def generate_music(mode):
             "loop_a": 8, "focus_block": 8, "pause_fill": 4, "soothing_loop": 16,
             "deep_layer": 8, "dream_pad": 8
         }
-
         beats_per_bar = 4
+
         output_path = "output"
         shutil.rmtree(output_path, ignore_errors=True)
         os.makedirs(output_path, exist_ok=True)
@@ -65,7 +67,6 @@ def generate_music(mode):
         score.append(tempo.MetronomeMark(number=fluctuated_bpm))
         score.insert(0, metadata.Metadata(title=f"Xenotune - {mode.title()} Mode"))
 
-        # Dynamic chord progressions
         chord_sets = {
             "focus": [["C4", "E4", "G4"], ["D4", "F4", "A4"], ["G3", "B3", "D4"]],
             "relax": [["C4", "G4", "A4"], ["E4", "G4", "B4"], ["D4", "F4", "A4"]],
@@ -73,7 +74,6 @@ def generate_music(mode):
         }
         progression = chord_sets.get(mode, [["C4", "E4", "G4"]])
 
-        # Instrument parts
         for inst in instruments:
             if "samples" in inst:
                 continue
@@ -87,6 +87,7 @@ def generate_music(mode):
                 section_beats = bars * beats_per_bar
                 beats = 0
                 velocity_range = (20, 50) if "ambient" in style else (30, 70)
+
                 while beats < section_beats:
                     vel = random.randint(*velocity_range)
                     if "slow" in style or "ambient" in style:
@@ -109,14 +110,13 @@ def generate_music(mode):
                         beats += 1
             score.append(part)
 
-        # Melody Part with motifs
+        # Melody Part
         melody_part = stream.Part()
-        melody_instrument = {
+        melody_part.insert(0, {
             "focus": instrument.ElectricPiano(),
             "relax": instrument.Piano(),
             "sleep": instrument.Piano()
-        }.get(mode, instrument.Piano())
-        melody_part.insert(0, melody_instrument)
+        }.get(mode, instrument.Piano()))
 
         scale_map = {
             "focus": ["C5", "D5", "E5", "F5", "G5", "A5"],
@@ -128,19 +128,13 @@ def generate_music(mode):
         def generate_motif():
             return [random.choice(melody_notes) for _ in range(4)]
 
-        def vary_motif(motif):
-            return [random.choice([n, random.choice(melody_notes)]) for n in motif]
-
-        def retrograde(motif):
-            return motif[::-1]
-
         for section_name in structure:
             bars = section_lengths.get(section_name, 8)
             section_beats = bars * beats_per_bar
             motif = generate_motif()
             beats = 0
             while beats < section_beats:
-                phrase = random.choice([motif, vary_motif(motif), retrograde(motif)])
+                phrase = random.choice([motif, motif[::-1], generate_motif()])
                 for pitch in phrase:
                     dur = random.choice([0.5, 1.0, 1.5]) if mode == "focus" else 1.0
                     n = note.Note(pitch, quarterLength=dur)
@@ -157,24 +151,23 @@ def generate_music(mode):
         mf.open(midi_path, 'wb')
         mf.write()
         mf.close()
+
         return convert_midi_to_mp3(midi_path)
 
     except Exception as e:
         print(f"⚠️ Error generating music: {e}")
         return None
 
-
-# Convert MIDI to MP3 with BGM mixing
+# Convert MIDI to MP3
 def convert_midi_to_mp3(
     midi_path,
     soundfont_path="FluidR3_GM/FluidR3_GM.sf2",
     fluidsynth_path="fluidsynth/bin/fluidsynth.exe",
     ffmpeg_path="ffmpeg/bin/ffmpeg.exe",
     bgm_path="assets/bgm.mp3",
-    music_volume="2.0",
-    bgm_volume="0.6"
-    ):
-
+    music_volume="1.0",
+    bgm_volume="0.5"
+):
     if not os.path.isfile(midi_path):
         raise FileNotFoundError(f"MIDI file not found: {midi_path}")
 
@@ -184,10 +177,9 @@ def convert_midi_to_mp3(
 
     subprocess.run([
         fluidsynth_path, "-ni", "-F", wav_path, "-r", "44100", soundfont_path, midi_path
-    ], check=True, capture_output=True, text=True)
+    ], check=True)
 
-    subprocess.run([ffmpeg_path, "-y", "-i", wav_path, mp3_path],
-                    check=True, capture_output=True, text=True)
+    subprocess.run([ffmpeg_path, "-y", "-i", wav_path, mp3_path], check=True)
 
     subprocess.run([
         ffmpeg_path, "-y",
@@ -196,25 +188,23 @@ def convert_midi_to_mp3(
         "-filter_complex",
         f"[0:a]volume={music_volume}[a0];[1:a]volume={bgm_volume}[a1];[a0][a1]amix=inputs=2:duration=first:dropout_transition=2",
         "-c:a", "libmp3lame", final_mix
-    ], check=True, capture_output=True, text=True)
+    ], check=True)
 
     os.remove(wav_path) if os.path.exists(wav_path) else None
     os.remove(mp3_path) if os.path.exists(mp3_path) else None
 
     return final_mix
 
-# Mode Shortcuts
-def generate_focus_music():
-    return generate_music("focus")
+# Shortcuts
+def generate_focus_music(): return generate_music("focus")
+def generate_relax_music(): return generate_music("relax")
+def generate_sleep_music(): return generate_music("sleep")
 
-def generate_relax_music():
-    return generate_music("relax")
+# Infinite Player
+stop_thread = False
 
-def generate_sleep_music():
-    return generate_music("sleep")
-
-# Infinite loop player
 def generate_and_play_loop(mode="focus"):
+    global stop_thread
     pygame.mixer.init()
     bgm_channel = pygame.mixer.Channel(0)
     music_channel = pygame.mixer.Channel(1)
@@ -222,23 +212,49 @@ def generate_and_play_loop(mode="focus"):
     print(f"🔁 Starting infinite music loop in {mode.upper()} mode...")
 
     bgm_path = "assets/bgm.mp3"
+    if not os.path.exists(bgm_path):
+        print(f"❌ Background music file not found: {bgm_path}")
+        return
+
     bgm_sound = pygame.mixer.Sound(bgm_path)
     bgm_sound.set_volume(0.6)
     bgm_channel.play(bgm_sound, loops=-1)
 
     try:
-        while True:
+        while not stop_thread:
             mp3 = generate_music(mode)
+            if not mp3 or not os.path.exists(mp3):
+                print("⚠️ Failed to generate music. Retrying in 2 seconds...")
+                time.sleep(2)
+                continue
+
             print(f"🎼 Generated and playing: {mp3}")
             music_sound = pygame.mixer.Sound(mp3)
             music_sound.set_volume(2.0)
             music_channel.play(music_sound)
 
-            while music_channel.get_busy():
+            while music_channel.get_busy() and not stop_thread:
                 pygame.time.wait(100)
-    except KeyboardInterrupt:
-        print("🛑 Music loop stopped by user.")
+
+    except Exception as e:
+        print(f"❌ Error in music loop: {e}")
+
+    finally:
+        print("🛑 Stopping music loop and cleaning up...")
         music_channel.stop()
         bgm_channel.stop()
         pygame.mixer.quit()
+
+
+def cleanup():
+    global stop_thread
+    stop_thread = True
+    print("🧹 Cleanup triggered. Music loop will stop.")
+
+atexit.register(cleanup)
+
+if __name__ == "__main__":
+
+    music_thread = threading.Thread(target=generate_and_play_loop, args=("focus",))
+    music_thread.start()
 
