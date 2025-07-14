@@ -149,7 +149,7 @@ def generate_music(mode):
         score.append(melody_part)
 
         timestamp = time.strftime("%Y%m%d_%H%M%S")
-        midi_path = f"{output_path}/{mode}_composition_{timestamp}.mid"
+        midi_path = f"{output_path}/{mode}.mid"
         mf = midi.translate.streamToMidiFile(score)
         mf.open(midi_path, 'wb')
         mf.write()
@@ -169,7 +169,7 @@ def convert_midi_to_mp3(
     ffmpeg_path="ffmpeg/bin/ffmpeg.exe",
     bgm_path="assets/bgm.mp3",
     music_volume="1.0",
-    bgm_volume="0.5"
+    bgm_volume="0.3"
 ):
     if not os.path.isfile(midi_path):
         raise FileNotFoundError(f"MIDI file not found: {midi_path}")
