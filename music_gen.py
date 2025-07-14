@@ -8,11 +8,14 @@ import pygame
 import atexit
 import threading
 from music21 import stream, chord, note, instrument, tempo, metadata, midi
+from json_gen import main
 
 # Load configuration
 def load_config(path="config.json"):
     with open(path, "r") as f:
         return json.load(f)
+    
+  
 
 # Instrument Mapping
 def get_music21_instrument(name):
@@ -44,7 +47,7 @@ def generate_music(mode):
         mode_data = config.get(mode)
         if not mode_data:
             raise ValueError(f"Invalid mode '{mode}' in config.")
-
+        
         bpm = mode_data.get("tempo", 80)
         instruments = mode_data.get("instruments", [])
         structure = mode_data.get("structure", ["intro", "loop", "outro"])
@@ -200,6 +203,7 @@ def generate_focus_music(): return generate_music("focus")
 def generate_relax_music(): return generate_music("relax")
 def generate_sleep_music(): return generate_music("sleep")
 
+
 # Infinite Player
 stop_thread = False
 
@@ -232,9 +236,11 @@ def generate_and_play_loop(mode="focus"):
             music_sound = pygame.mixer.Sound(mp3)
             music_sound.set_volume(2.0)
             music_channel.play(music_sound)
-
+            main()
             while music_channel.get_busy() and not stop_thread:
                 pygame.time.wait(100)
+
+            
 
     except Exception as e:
         print(f"❌ Error in music loop: {e}")
