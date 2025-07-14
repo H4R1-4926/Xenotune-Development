@@ -168,8 +168,8 @@ def convert_midi_to_mp3(
     fluidsynth_path="fluidsynth/bin/fluidsynth.exe",
     ffmpeg_path="ffmpeg/bin/ffmpeg.exe",
     bgm_path="assets/bgm.mp3",
-    music_volume="1.0",
-    bgm_volume="0.3"
+    music_volume="2.0",
+    bgm_volume="0.2"
 ):
     if not os.path.isfile(midi_path):
         raise FileNotFoundError(f"MIDI file not found: {midi_path}")
@@ -221,7 +221,7 @@ def generate_and_play_loop(mode="focus"):
         return
 
     bgm_sound = pygame.mixer.Sound(bgm_path)
-    bgm_sound.set_volume(0.6)
+    bgm_sound.set_volume(0.2)
     bgm_channel.play(bgm_sound, loops=-1)
 
     try:
