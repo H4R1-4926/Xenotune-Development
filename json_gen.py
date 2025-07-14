@@ -57,7 +57,7 @@ def generate_notes(model, start_seq=None, length=6):
         seq.append(next_note)
     notes = [int_to_note[i] for i in seq]
     chords = [notes[i:i+3] for i in range(len(notes) - 2)]
-    return notes, chords[:2]
+    return notes, chords
 
 # 🔁 Update the config with generated notes/chords
 def update_config(config, model):
