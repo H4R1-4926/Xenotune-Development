@@ -148,7 +148,7 @@ def generate_music(mode):
                         break
         score.append(melody_part)
 
-        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        
         midi_path = f"{output_path}/{mode}.mid"
         mf = midi.translate.streamToMidiFile(score)
         mf.open(midi_path, 'wb')
