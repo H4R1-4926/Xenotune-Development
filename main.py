@@ -2,8 +2,17 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from music_gen import generate_and_play_loop
 import threading
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],       # Allow all origins (safe for mobile apps)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/play/focus")
 async def play_focus():
