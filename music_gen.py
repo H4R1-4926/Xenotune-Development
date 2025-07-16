@@ -1,7 +1,6 @@
 import os
 import time
 import json
-import shutil
 import random
 import subprocess
 import pygame
@@ -14,8 +13,6 @@ from json_gen import main
 def load_config(path="config.json"):
     with open(path, "r") as f:
         return json.load(f)
-    
-  
 
 # Instrument Mapping
 def get_music21_instrument(name):
@@ -47,7 +44,7 @@ def generate_music(mode):
         mode_data = config.get(mode)
         if not mode_data:
             raise ValueError(f"Invalid mode '{mode}' in config.")
-        
+
         bpm = mode_data.get("tempo", 80)
         instruments = mode_data.get("instruments", [])
         structure = mode_data.get("structure", ["intro", "loop", "outro"])
@@ -60,10 +57,6 @@ def generate_music(mode):
             "deep_layer": 8, "dream_pad": 8
         }
         beats_per_bar = 4
-
-        output_path = "output"
-        shutil.rmtree(output_path, ignore_errors=True)
-        os.makedirs(output_path, exist_ok=True)
 
         score = stream.Score()
         fluctuated_bpm = bpm + random.choice([-2, 0, 1])
@@ -148,8 +141,7 @@ def generate_music(mode):
                         break
         score.append(melody_part)
 
-        
-        midi_path = f"{output_path}/{mode}.mid"
+        midi_path = f"{mode}.mid"
         mf = midi.translate.streamToMidiFile(score)
         mf.open(midi_path, 'wb')
         mf.write()
@@ -162,6 +154,7 @@ def generate_music(mode):
         return None
 
 # Convert MIDI to MP3
+
 def convert_midi_to_mp3(
     midi_path,
     soundfont_path="FluidR3_GM/FluidR3_GM.sf2",
@@ -195,6 +188,7 @@ def convert_midi_to_mp3(
 
     os.remove(wav_path) if os.path.exists(wav_path) else None
     os.remove(mp3_path) if os.path.exists(mp3_path) else None
+    os.remove(midi_path) if os.path.exists(midi_path) else None
 
     return final_mix
 
@@ -202,7 +196,6 @@ def convert_midi_to_mp3(
 def generate_focus_music(): return generate_music("focus")
 def generate_relax_music(): return generate_music("relax")
 def generate_sleep_music(): return generate_music("sleep")
-
 
 # Infinite Player
 stop_thread = False
@@ -240,8 +233,6 @@ def generate_and_play_loop(mode="focus"):
             while music_channel.get_busy() and not stop_thread:
                 pygame.time.wait(100)
 
-            
-
     except Exception as e:
         print(f"❌ Error in music loop: {e}")
 
@@ -260,7 +251,5 @@ def cleanup():
 atexit.register(cleanup)
 
 if __name__ == "__main__":
-
     music_thread = threading.Thread(target=generate_and_play_loop, args=("focus",))
     music_thread.start()
-
