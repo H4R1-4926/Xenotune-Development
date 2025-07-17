@@ -3,6 +3,17 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from music_gen import generate_and_play_loop
 import threading
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],       # Allow all origins (safe for mobile apps)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 import os
 
 app = FastAPI()
