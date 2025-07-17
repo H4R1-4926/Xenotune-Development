@@ -1,27 +1,9 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
 from music_gen import generate_and_play_loop
 import threading
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],       # Allow all origins (safe for mobile apps)
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-import os
-
-app = FastAPI()
-
-# Serve static music files at /static/music/
-STATIC_MUSIC_DIR = "static/music"
-os.makedirs(STATIC_MUSIC_DIR, exist_ok=True)
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/play/focus")
 async def play_focus():
