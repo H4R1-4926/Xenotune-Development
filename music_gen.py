@@ -119,7 +119,7 @@ def generate_music(mode):
         melody_part = create_melody_part(mode, structure, progression)
         score.append(melody_part)
 
-        midi_path = f"{OUTPUT_PATH}/{mode}.mid"
+        midi_path = f"{OUTPUT_PATH}/music.mid"
         mf = midi.translate.streamToMidiFile(score)
         mf.open(midi_path, 'wb')
         mf.write()
