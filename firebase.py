@@ -20,7 +20,7 @@ def init_firebase():
  
  
 def upload_to_firebase(local_file_path: str, firebase_path: str) -> str:
-
+ 
     # Ensure Firebase is initialized
     init_firebase()
  
@@ -50,4 +50,5 @@ if __name__ == "__main__":
         print(f"Public URL: {url}")
     except Exception as e:
         print(f"Error: {e}")
+ 
  
