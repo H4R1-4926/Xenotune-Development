@@ -2,6 +2,7 @@ import os, time, json, shutil, random, subprocess, atexit, threading, signal
 from music21 import stream, chord, note, instrument, tempo, metadata, midi
 from json_gen import main
 
+
 CONFIG_PATH = "config.json"
 OUTPUT_PATH = "output"
 FFPLAY_PATH = "ffmpeg/bin/ffplay.exe"
@@ -44,9 +45,6 @@ def load_config():
 
 def get_instrument(name):
     return INSTRUMENT_MAP.get(name, instrument.Instrument(name))
-
-import subprocess
-import os
 
 def convert_midi_to_mp3(midi_path):
     wav = midi_path.replace(".mid", ".wav")

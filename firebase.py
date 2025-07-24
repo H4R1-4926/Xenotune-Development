@@ -1,6 +1,7 @@
 import os
 import firebase_admin
 from firebase_admin import credentials, storage
+from main import write_service_account_file
  
 # Initialize Firebase app only once
 firebase_initialized = False
@@ -8,7 +9,9 @@ firebase_initialized = False
 def init_firebase():
     global firebase_initialized
     if not firebase_initialized:
-        cred_path = os.getenv("FIREBASE_CRED_PATH", "assets/serviceAccountKey.json")
+        write_service_account_file()
+        #cred_path = os.getenv("FIREBASE_CRED_PATH", "assets/serviceAccountKey.json")
+        cred_path = os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
         if not os.path.exists(cred_path):
             raise FileNotFoundError(f"Firebase credential file not found at: {cred_path}")
  
@@ -37,7 +40,7 @@ def upload_to_firebase(local_file_path: str, firebase_path: str) -> str:
         public_url = blob.public_url
         print(f"✅ Uploaded to Firebase Storage: {public_url}")
         return public_url
- 
+
     except Exception as e:
         print(f"❌ Failed to upload to Firebase: {e}")
         raise
