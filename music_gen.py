@@ -2,7 +2,6 @@ import os, time, json, shutil, random, subprocess, atexit, threading, signal
 from music21 import stream, chord, note, instrument, tempo, metadata, midi
 from json_gen import main
 
-# --- Paths ---
 CONFIG_PATH = "config.json"
 OUTPUT_PATH = "output"
 FFPLAY_PATH = "ffmpeg/bin/ffplay.exe"
@@ -10,13 +9,6 @@ FLUIDSYNTH_PATH = "fluidsynth/bin/fluidsynth.exe"
 SOUNDFONT_PATH = "FluidR3_GM/FluidR3_GM.sf2"
 FFMPEG_PATH = "ffmpeg/bin/ffmpeg.exe"
 BGM_PATH = "assets/bgm.mp3"
-
-# --- Globals ---
-stop_flag = False
-music_proc = None
-bgm_proc = None
-is_paused = False
-volume = 1.0  # Default volume (1.0 = 100%)
 
 SECTION_LENGTHS = {
     "intro": 4, "groove": 8, "verse": 8, "chorus": 8, "bridge": 8, "drop": 8,
@@ -38,7 +30,14 @@ INSTRUMENT_MAP = {
     "Electric Guitar": instrument.ElectricGuitar()
 }
 
-# --- Config Loader ---
+music_state = {
+    "stop": False,
+    "pause": False,
+    "volume": 1.0,
+    "mode": "focus"
+}
+
+
 def load_config():
     with open(CONFIG_PATH, "r") as f:
         return json.load(f)
@@ -46,26 +45,56 @@ def load_config():
 def get_instrument(name):
     return INSTRUMENT_MAP.get(name, instrument.Instrument(name))
 
-# --- Convert MIDI to MP3 + Mix with BGM ---
+import subprocess
+import os
+
 def convert_midi_to_mp3(midi_path):
     wav = midi_path.replace(".mid", ".wav")
     mp3 = midi_path.replace(".mid", ".mp3")
     mixed = midi_path.replace(".mid", "_mixed.mp3")
+
     try:
+        # Convert MIDI to WAV
         subprocess.run([FLUIDSYNTH_PATH, "-ni", "-F", wav, "-r", "44100", SOUNDFONT_PATH, midi_path], check=True)
+        
+        # Convert WAV to MP3
         subprocess.run([FFMPEG_PATH, "-y", "-i", wav, mp3], check=True)
+
+        # Get the duration of the generated music (mp3)
+        result = subprocess.run(
+            [FFMPEG_PATH, "-i", mp3, "-f", "null", "-"],
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        duration_line = [line for line in result.stderr.splitlines() if "Duration" in line]
+        duration = None
+        if duration_line:
+            time_str = duration_line[0].split("Duration:")[1].split(",")[0].strip()
+            h, m, s = map(float, time_str.replace(":", " ").split())
+            duration = h * 3600 + m * 60 + s
+
+        if not duration:
+            raise Exception("Could not extract MP3 duration.")
+
+        # Mix and trim both generated music and BGM to same duration
         subprocess.run([
-            FFMPEG_PATH, "-y", "-i", mp3, "-i", BGM_PATH,
-            "-filter_complex", "[0:a]volume=1.0[a0];[1:a]volume=0.3[a1];[a0][a1]amix=inputs=2",
-            "-c:a", "libmp3lame", mixed
+            FFMPEG_PATH, "-y",
+            "-t", str(duration),
+            "-i", mp3,
+            "-t", str(duration),
+            "-i", BGM_PATH,
+            "-filter_complex", "[0:a]volume=0.3[a0];[1:a]volume=0.5[a1];[a0][a1]amix=inputs=2:duration=shortest",
+            "-c:a", "libmp3lame",
+            mixed
         ], check=True)
+
     finally:
         for f in [wav, mp3]:
             if os.path.exists(f):
                 os.remove(f)
+
     return mixed
 
-# --- Melody Generator ---
 def create_melody_part(mode, structure, progression):
     melody = stream.Part()
     melody.insert(0, {
@@ -96,126 +125,104 @@ def create_melody_part(mode, structure, progression):
                     break
     return melody
 
-# --- Music Generator ---
 def generate_music(mode):
-    try:
-        config = load_config()
-        data = config.get(mode)
-        if not data:
-            raise ValueError(f"Invalid mode: {mode}")
-        bpm = data.get("tempo", 80)
-        instruments = data.get("instruments", [])
-        structure = data.get("structure", ["intro", "loop", "outro"])
+    config = load_config()
+    data = config.get(mode)
+    if not data:
+        raise ValueError(f"Invalid mode: {mode}")
+    bpm = data.get("tempo", 80)
+    instruments = data.get("instruments", [])
+    structure = data.get("structure", ["intro", "loop", "outro"])
 
-        shutil.rmtree(OUTPUT_PATH, ignore_errors=True)
-        os.makedirs(OUTPUT_PATH, exist_ok=True)
+    shutil.rmtree(OUTPUT_PATH, ignore_errors=True)
+    os.makedirs(OUTPUT_PATH, exist_ok=True)
 
-        score = stream.Score()
-        score.append(tempo.MetronomeMark(number=bpm + random.choice([-2, 0, 1])))
-        score.insert(0, metadata.Metadata(title=f"Xenotune - {mode.title()}"))
+    score = stream.Score()
+    score.append(tempo.MetronomeMark(number=bpm + random.choice([-2, 0, 1])))
+    score.insert(0, metadata.Metadata(title=f"Xenotune - {mode.title()}"))
 
-        progression_map = {
-            "focus": [["C4", "E4", "G4"], ["D4", "F4", "A4"], ["G3", "B3", "D4"]],
-            "relax": [["C4", "G4", "A4"], ["E4", "G4", "B4"], ["D4", "F4", "A4"]],
-            "sleep": [["C3", "E3", "G3"], ["A3", "C4", "E4"], ["F3", "A3", "C4"]]
-        }
-        progression = progression_map.get(mode, [["C4", "E4", "G4"]])
+    progression_map = {
+        "focus": [["C4", "E4", "G4"], ["D4", "F4", "A4"], ["G3", "B3", "D4"]],
+        "relax": [["C4", "G4", "A4"], ["E4", "G4", "B4"], ["D4", "F4", "A4"]],
+        "sleep": [["C3", "E3", "G3"], ["A3", "C4", "E4"], ["F3", "A3", "C4"]]
+    }
+    progression = progression_map.get(mode, [["C4", "E4", "G4"]])
 
-        for inst in instruments:
-            if "samples" in inst:
-                continue
-            part = stream.Part()
-            part.insert(0, get_instrument(inst.get("name", "Piano")))
-            style = inst.get("style", "")
-            notes = inst.get("notes", random.choice(progression))
-            vel_range = (20, 50) if "ambient" in style else (30, 70)
+    for inst in instruments:
+        if "samples" in inst:
+            continue
+        part = stream.Part()
+        part.insert(0, get_instrument(inst.get("name", "Piano")))
+        style = inst.get("style", "")
+        notes = inst.get("notes", random.choice(progression))
+        vel_range = (20, 50) if "ambient" in style else (30, 70)
 
-            for section in structure:
-                beats = 0
-                total_beats = SECTION_LENGTHS.get(section, 8) * 4
-                while beats < total_beats:
-                    vel = random.randint(*vel_range)
-                    if "arp" in style:
-                        for n in notes:
-                            nt = note.Note(n, quarterLength=0.5)
-                            nt.volume.velocity = vel
-                            part.append(nt)
-                            beats += 0.5
-                            if beats >= total_beats:
-                                break
-                        continue
-                    length = 1.5 if "slow" in style else 1.0
-                    c = chord.Chord(random.choice(progression), quarterLength=length)
-                    c.volume.velocity = vel
-                    part.append(c)
-                    beats += c.quarterLength
-            score.append(part)
+        for section in structure:
+            beats = 0
+            total_beats = SECTION_LENGTHS.get(section, 8) * 4
+            while beats < total_beats:
+                vel = random.randint(*vel_range)
+                if "arp" in style:
+                    for n in notes:
+                        nt = note.Note(n, quarterLength=0.5)
+                        nt.volume.velocity = vel
+                        part.append(nt)
+                        beats += 0.5
+                        if beats >= total_beats:
+                            break
+                    continue
+                length = 1.5 if "slow" in style else 1.0
+                c = chord.Chord(random.choice(progression), quarterLength=length)
+                c.volume.velocity = vel
+                part.append(c)
+                beats += c.quarterLength
+        score.append(part)
 
-        score.append(create_melody_part(mode, structure, progression))
+    score.append(create_melody_part(mode, structure, progression))
 
-        midi_path = os.path.join(OUTPUT_PATH, f"{mode}.mid")
-        mf = midi.translate.streamToMidiFile(score)
-        mf.open(midi_path, 'wb'); mf.write(); mf.close()
-        return convert_midi_to_mp3(midi_path)
+    midi_path = os.path.join(OUTPUT_PATH, f"{mode}.mid")
+    mf = midi.translate.streamToMidiFile(score)
+    mf.open(midi_path, 'wb'); mf.write(); mf.close()
+    return convert_midi_to_mp3(midi_path)
 
-    except Exception as e:
-        print(f"⚠️ Error generating music: {e}")
-        return None
+def music_loop():
+    while not music_state["stop"]:
+        if music_state["pause"]:
+            time.sleep(0.5)
+            continue
 
-# --- Loop & Control ---
-def start_music_loop(mode="focus"):
-    global stop_flag, music_proc, bgm_proc
-    stop_flag = False
-    print(f"🎧 Starting music loop in {mode.upper()} mode...")
-
-    bgm_proc = subprocess.Popen([FFPLAY_PATH, "-nodisp", "-autoexit", "-loop", "0", BGM_PATH],
-                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-    while not stop_flag:
-        music_path = generate_music(mode)
-        if not music_path or not os.path.exists(music_path):
-            time.sleep(2)
+        music_path = generate_music(music_state["mode"])
+        if not music_path:
             continue
         print(f"🎶 Playing: {music_path}")
-        main()  # optional: update metadata
-        music_proc = subprocess.Popen([FFPLAY_PATH, "-nodisp", "-autoexit", "-volume", str(int(volume * 100)), music_path])
-        music_proc.wait()
+        main()
+        p = subprocess.Popen([FFPLAY_PATH, "-nodisp", "-autoexit", "-volume", str(int(music_state["volume"] * 100)), music_path])
+        while p.poll() is None:
+            if music_state["stop"]:
+                p.terminate()
+                break
+            if music_state["pause"]:
+                p.send_signal(signal.SIGSTOP)
+                while music_state["pause"] and not music_state["stop"]:
+                    time.sleep(0.5)
+                if not music_state["stop"]:
+                    p.send_signal(signal.SIGCONT)
+            time.sleep(0.5)
 
-    stop_music()
-
-def pause_playback():
-    global is_paused, music_proc
-    if music_proc and not is_paused:
-        music_proc.send_signal(signal.SIGSTOP)
-        is_paused = True
-        print("⏸ Paused")
-
-def resume_playback():
-    global is_paused, music_proc
-    if music_proc and is_paused:
-        music_proc.send_signal(signal.SIGCONT)
-        is_paused = False
-        print("▶️ Resumed")
+def start_music(mode):
+    music_state.update({"stop": False, "pause": False, "mode": mode})
+    threading.Thread(target=music_loop, daemon=True).start()
 
 def stop_music():
-    global stop_flag, music_proc, bgm_proc
-    stop_flag = True
-    if music_proc: music_proc.terminate()
-    if bgm_proc: bgm_proc.terminate()
-    print("🛑 Music & BGM stopped")
+    music_state["stop"] = True
 
-def set_volume(vol: float):
-    global volume
-    volume = max(0.0, min(vol, 1.0))
-    print(f"🔊 Volume set to {int(volume * 100)}%")
+def pause_music():
+    music_state["pause"] = True
 
-# --- Cleanup ---
-def cleanup():
-    stop_music()
-    print("✅ Cleanup complete")
+def resume_music():
+    music_state["pause"] = False
 
-atexit.register(cleanup)
+def set_volume(vol):
+    music_state["volume"] = max(0.0, min(vol, 1.0))
 
-# --- Local Test ---
-if __name__ == "__main__":
-    threading.Thread(target=start_music_loop, args=("focus",)).start()
+atexit.register(stop_music)
