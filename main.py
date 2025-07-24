@@ -1,89 +1,74 @@
-from fastapi import FastAPI, Query, Request
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from typing import Optional
-from music_gen import generate_and_play_loop, generate_music
-from firebase import upload_to_firebase
-import threading, time
- 
-app = FastAPI()
- 
-VALID_MODES = {"focus", "relax", "sleep"}
-VALID_ACTIONS = {"play_loop", "generate_and_upload"}
- 
- 
-# Start loop in background thread
-def start_music_loop(mode: str):
-    threading.Thread(target=generate_and_play_loop, args=(mode,), daemon=True).start()
- 
- 
-# Shared logic for /music and /gmusic
-def handle_music_logic(mode: str, user_id: Optional[str], action: str):
-    if mode not in VALID_MODES:
-        return JSONResponse({"error": "Invalid mode. Choose from focus, relax, or sleep."}, status_code=400)
-   
-    if action not in VALID_ACTIONS:
-        return JSONResponse({"error": "Invalid action. Choose from play_loop or generate_and_upload."}, status_code=400)
- 
-    if action == "play_loop":
-        start_music_loop(mode)
-        return JSONResponse({"status": f"{mode.capitalize()} music loop started playing on backend."})
- 
-    if action == "generate_and_upload":
-        if not user_id:
-            return JSONResponse({"error": "user_id is required for uploading."}, status_code=400)
-       
-        filename = f"{mode}_{int(time.time())}.mp3"
-        local_path = generate_music(mode)
- 
-        if not local_path:
-            return JSONResponse({"error": "Music generation failed."}, status_code=500)
- 
-        try:
-            firebase_path = f"users/{user_id}/{filename}"
-            url = upload_to_firebase(local_path, firebase_path)
-            return JSONResponse({'download_url': url})
-        except Exception as e:
-            return JSONResponse({"error": f"Upload failed: {str(e)}"}, status_code=500)
- 
- 
-# GET endpoint with query parameters
-@app.get("/music/{mode}")
-async def music_mode_get(
-    mode: str,
-    user_id: Optional[str] = Query(None),
-    action: str = Query("play_loop")
-):
-    return handle_music_logic(mode, user_id, action)
- 
- 
- 
- 
-# POST endpoint that accepts JSON and uploads music
-@app.post("/generate-music")
-async def generate_music_api(request: Request):
+from pydantic import BaseModel
+import time
+
+from music_gen import generate_music  # Must return local MP3 path
+from firebase import upload_to_firebase  # Must upload and return URL
+
+app = FastAPI(title="Xenotune AI Music Generator")
+
+# Enable CORS (open for frontend requests)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Change in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
+# --- Valid Modes ---
+VALID_MOODS = {"focus", "relax", "sleep"}
+
+# --- Request Model ---
+class GenerateMusicRequest(BaseModel):
+    user_id: str
+    mood: str
+
+# --- Music Generation Endpoint ---
+@app.post("/generate", summary="Generate and Upload Music")
+async def handle_music_generation(request: GenerateMusicRequest):
+    mood = request.mood.lower().strip()
+    user_id = request.user_id.strip()
+
+    if mood not in VALID_MOODS:
+        return JSONResponse(
+            content={"error": "Invalid mood. Choose from focus, relax, or sleep."},
+            status_code=400
+        )
+
+    if not user_id:
+        return JSONResponse(content={"error": "User ID is required."}, status_code=400)
+
     try:
-        data = await request.json()
-        user_id = data.get("user_id")
-        mood = data.get("mood", "sleep")
- 
-        if not user_id:
-            return JSONResponse({"error": "user_id is required."}, status_code=400)
- 
-        filename = f"output/{mood}_{int(time.time())}.mp3"
-        local_path = generate_music(mood)
- 
-        if not local_path:
-            return JSONResponse({"error": "Music generation failed."}, status_code=500)
- 
+        timestamp = int(time.time())
+        filename = f"{mood}_{timestamp}.mp3"
+
+        # Generate music based on mood and save locally
+        local_mp3_path = generate_music(mood, filename)
+        if not local_mp3_path:
+            return JSONResponse(content={"error": "Music generation failed."}, status_code=500)
+
+        # Upload generated music to Firebase
         firebase_path = f"users/{user_id}/{filename}"
-        url = upload_to_firebase(local_path, firebase_path)
- 
-        # ✅ Start background loop after upload
-        start_music_loop(mood)
- 
-        return JSONResponse({'download_url': url})
- 
+        download_url = upload_to_firebase(local_mp3_path, firebase_path)
+
+        return {
+            "status": "success",
+            "mood": mood,
+            "filename": filename,
+            "download_url": download_url,
+            "message": f"{mood.capitalize()} music successfully generated and uploaded."
+        }
+
     except Exception as e:
-        return JSONResponse({"error": f"Unexpected error: {str(e)}"}, status_code=500)
- 
- 
+        return JSONResponse(
+            content={"error": f"Unexpected server error: {str(e)}"},
+            status_code=500
+        )
+
+# --- Health Check Endpoint ---
+@app.get("/", summary="Check API Status")
+def health_check():
+    return {"message": "🎵 Xenotune backend is up and ready to generate your music!"}
