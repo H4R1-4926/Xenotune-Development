@@ -67,4 +67,4 @@ poetry.lock
 secrets/
 
 #serviceAccountKey.json
-./serviceAccountKey.json
+assets/serviceAccountKey.json
