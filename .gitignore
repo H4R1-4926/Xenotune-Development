@@ -65,3 +65,6 @@ poetry.lock
 
 # Ignore local secrets
 secrets/
+
+#serviceAccountKey.json
+./assets/serviceAccountKey.json
