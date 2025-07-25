@@ -20,7 +20,7 @@ def write_service_account_file():
     with open(firebase_key_path, "w") as f:
 
         json.dump(json.loads(key_content), f)
- 
+    
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = firebase_key_path
  
 def init_firebase():
@@ -36,7 +36,7 @@ def init_firebase():
     if not os.path.exists(firebase_key_path):
 
         raise FileNotFoundError(f"Firebase credential file not found at: {firebase_key_path}")
- 
+    #cred_path = os.getenv("FIREBASE_CRED_PATH", "assets/serviceAccountKey.json")
     cred = credentials.Certificate(firebase_key_path)
 
     firebase_admin.initialize_app(cred, {
