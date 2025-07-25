@@ -1,25 +1,52 @@
-import os
+import os, json
 import firebase_admin
 from firebase_admin import credentials, storage
-from xenomain import write_service_account_file
  
 # Initialize Firebase app only once
 firebase_initialized = False
+
+firebase_key_path = "firebase_key.json"
+ 
+def write_service_account_file():
+
+    key_content = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+
+    if not key_content:
+
+        raise RuntimeError("Firebase key not found in environment variables.")
+ 
+    # Save the JSON content to a file
+
+    with open(firebase_key_path, "w") as f:
+
+        json.dump(json.loads(key_content), f)
+    
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = firebase_key_path
  
 def init_firebase():
+
     global firebase_initialized
-    if not firebase_initialized:
-        write_service_account_file()
-        #cred_path = os.getenv("FIREBASE_CRED_PATH", "assets/serviceAccountKey.json")
-        cred_path = os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
-        if not os.path.exists(cred_path):
-            raise FileNotFoundError(f"Firebase credential file not found at: {cred_path}")
+
+    if firebase_initialized:
+
+        return
  
-        cred = credentials.Certificate(cred_path)
-        firebase_admin.initialize_app(cred, {
-            'storageBucket': os.getenv('FIREBASE_BUCKET', 'xenotune-fromx.firebasestorage.app')
-        })
-        firebase_initialized = True
+    write_service_account_file()
+ 
+    if not os.path.exists(firebase_key_path):
+
+        raise FileNotFoundError(f"Firebase credential file not found at: {firebase_key_path}")
+    #cred_path = os.getenv("FIREBASE_CRED_PATH", "assets/serviceAccountKey.json")
+    cred = credentials.Certificate(firebase_key_path)
+
+    firebase_admin.initialize_app(cred, {
+
+        'storageBucket': os.getenv('FIREBASE_BUCKET', 'xenotune-fromx.appspot.com')  # ✅ corrected bucket name
+
+    })
+ 
+    firebase_initialized = True
+ 
  
  
 def upload_to_firebase(local_file_path: str, firebase_path: str) -> str:
