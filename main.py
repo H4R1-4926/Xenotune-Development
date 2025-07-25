@@ -99,16 +99,3 @@ async def control_music(request: ControlMusicRequest):
 @app.get("/", summary="Xenotune API Health")
 def health_check():
     return {"message": "🎶 Xenotune backend is alive and ready to generate music!"}
-
-def write_service_account_file():
-    key_content = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
-    if not key_content:
-        raise RuntimeError("Firebase key not found in environment variables.")
-    # Define where to save the key temporarily
-    path = "firebase_key.json"
-    # Save it
-    with open(path, "w") as f:
-        json.dump(json.loads(key_content), f)
-    # Set the environment variable expected by Firebase
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = path
- 

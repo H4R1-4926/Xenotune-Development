@@ -1,15 +1,25 @@
-import os
+import os, json
 import firebase_admin
 from firebase_admin import credentials, storage
-from xenomain import write_service_account_file
  
 # Initialize Firebase app only once
 firebase_initialized = False
  
+def write_service_account_file():
+    key_content = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+    if not key_content:
+        raise RuntimeError("Firebase key not found in environment variables.")
+    # Define where to save the key temporarily
+    path = "firebase_key.json"
+    # Save it
+    with open(path, "w") as f:
+        json.dump(json.loads(key_content), f)
+    # Set the environment variable expected by Firebase
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = path
+
 def init_firebase():
     global firebase_initialized
     if not firebase_initialized:
-        write_service_account_file()
         #cred_path = os.getenv("FIREBASE_CRED_PATH", "assets/serviceAccountKey.json")
         cred_path = os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
         if not os.path.exists(cred_path):
