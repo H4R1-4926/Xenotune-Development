@@ -16,7 +16,7 @@ backend/
 
 ---
 
-## ⚙️ Setup Instructions
+## ⚙️ Setup Instruction
 
 ### 1. Clone the Repository
 
