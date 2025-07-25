@@ -1,7 +1,7 @@
 import os
 import firebase_admin
 from firebase_admin import credentials, storage
-from main import write_service_account_file
+from xenomain import write_service_account_file
  
 # Initialize Firebase app only once
 firebase_initialized = False
