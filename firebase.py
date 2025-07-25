@@ -4,32 +4,49 @@ from firebase_admin import credentials, storage
  
 # Initialize Firebase app only once
 firebase_initialized = False
+
+firebase_key_path = "firebase_key.json"
  
 def write_service_account_file():
-    key_content = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
-    if not key_content:
-        raise RuntimeError("Firebase key not found in environment variables.")
-    # Define where to save the key temporarily
-    path = "firebase_key.json"
-    # Save it
-    with open(path, "w") as f:
-        json.dump(json.loads(key_content), f)
-    # Set the environment variable expected by Firebase
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = path
 
-def init_firebase():
-    global firebase_initialized
-    if not firebase_initialized:
-        #cred_path = os.getenv("FIREBASE_CRED_PATH", "assets/serviceAccountKey.json")
-        cred_path = os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
-        if not os.path.exists(cred_path):
-            raise FileNotFoundError(f"Firebase credential file not found at: {cred_path}")
+    key_content = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+
+    if not key_content:
+
+        raise RuntimeError("Firebase key not found in environment variables.")
  
-        cred = credentials.Certificate(cred_path)
-        firebase_admin.initialize_app(cred, {
-            'storageBucket': os.getenv('FIREBASE_BUCKET', 'xenotune-fromx.firebasestorage.app')
-        })
-        firebase_initialized = True
+    # Save the JSON content to a file
+
+    with open(firebase_key_path, "w") as f:
+
+        json.dump(json.loads(key_content), f)
+ 
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = firebase_key_path
+ 
+def init_firebase():
+
+    global firebase_initialized
+
+    if firebase_initialized:
+
+        return
+ 
+    write_service_account_file()
+ 
+    if not os.path.exists(firebase_key_path):
+
+        raise FileNotFoundError(f"Firebase credential file not found at: {firebase_key_path}")
+ 
+    cred = credentials.Certificate(firebase_key_path)
+
+    firebase_admin.initialize_app(cred, {
+
+        'storageBucket': os.getenv('FIREBASE_BUCKET', 'xenotune-fromx.appspot.com')  # ✅ corrected bucket name
+
+    })
+ 
+    firebase_initialized = True
+ 
  
  
 def upload_to_firebase(local_file_path: str, firebase_path: str) -> str:
