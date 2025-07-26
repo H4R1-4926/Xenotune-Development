@@ -3,8 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import time
-import os, json
-from music_gen import generate_music, music_state
+from music_gen import generate_music
 from firebase import upload_to_firebase
 
 app = FastAPI(title="Xenotune AI Music Generator")
@@ -20,15 +19,11 @@ app.add_middleware(
 
 # --- Valid Modes ---
 VALID_MODES = {"focus", "relax", "sleep"}
-VALID_ACTIONS = {"pause", "resume", "stop"}
 
-# --- Request Models ---
+# --- Request Model ---
 class GenerateMusicRequest(BaseModel):
     user_id: str
     mode: str
-
-class ControlMusicRequest(BaseModel):
-    action: str  # pause, resume, stop
 
 # --- Generate Music Endpoint ---
 @app.post("/generate")
@@ -48,7 +43,7 @@ async def handle_music_generation(request: GenerateMusicRequest):
         timestamp = int(time.time())
         filename = f"{mode}_{timestamp}.mp3"
 
-        # Generate & loop music
+        # Generate music
         local_path = generate_music(mode)
         if not local_path:
             return JSONResponse(content={"error": "Music generation failed."}, status_code=500)
@@ -62,7 +57,7 @@ async def handle_music_generation(request: GenerateMusicRequest):
             "mode": mode,
             "filename": filename,
             "download_url": download_url,
-            "message": f"{mode.capitalize()} music generated, looping & uploaded."
+            "message": f"{mode.capitalize()} music generated and uploaded."
         }
 
     except Exception as e:
@@ -71,44 +66,7 @@ async def handle_music_generation(request: GenerateMusicRequest):
             status_code=500
         )
 
-# --- Control Music Playback ---
-@app.post("/music-control")
-async def control_music(request: ControlMusicRequest):
-    action = request.action.lower().strip()
-    if action not in VALID_ACTIONS:
-        return JSONResponse(
-            content={"error": "Invalid action. Choose from pause, resume, or stop."},
-            status_code=400
-        )
-
-    try:
-        music_state[action] = True
-        return {
-            "status": "success",
-            "action": action,
-            "message": f"Playback {action} command received."
-        }
-
-    except Exception as e:
-        return JSONResponse(
-            content={"error": f"Failed to control music: {str(e)}"},
-            status_code=500
-        )
-
 # --- Health Check ---
 @app.get("/", summary="Xenotune API Health")
 def health_check():
     return {"message": "🎶 Xenotune backend is alive and ready to generate music!"}
-
-def write_service_account_file():
-    key_content = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
-    if not key_content:
-        raise RuntimeError("Firebase key not found in environment variables.")
-    # Define where to save the key temporarily
-    path = "firebase_key.json"
-    # Save it
-    with open(path, "w") as f:
-        json.dump(json.loads(key_content), f)
-    # Set the environment variable expected by Firebase
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = path
- 
