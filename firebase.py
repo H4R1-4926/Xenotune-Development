@@ -14,7 +14,7 @@ def init_firebase():
     if not os.path.exists(cred_path):
         raise FileNotFoundError(f"❌ Firebase credential file not found at: {cred_path}")
 
-    firebase_bucket = os.getenv("FIREBASE_BUCKET", "xenotune-fromx.appspot.com")
+    firebase_bucket = os.getenv("FIREBASE_BUCKET", "xenotune-fromx.firebasestorage.app")
     cred = credentials.Certificate(cred_path)
     firebase_admin.initialize_app(cred, {
         'storageBucket': firebase_bucket
