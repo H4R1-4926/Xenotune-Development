@@ -1,7 +1,7 @@
 import os
 import firebase_admin
 from firebase_admin import credentials, storage
-
+import json
 firebase_initialized = False
 
 def init_firebase():
@@ -10,7 +10,7 @@ def init_firebase():
     if firebase_initialized:
         return
 
-    cred_path = os.getenv("FIREBASE_CRED_PATH", "assets/serviceAccountKey.json")
+    cred_path = os.getenv("FIREBASE_CRED_PATH", "assets\serviceAccountKey.json")
     if not os.path.exists(cred_path):
         raise FileNotFoundError(f"❌ Firebase credential file not found at: {cred_path}")
 

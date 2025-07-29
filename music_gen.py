@@ -1,23 +1,25 @@
-import os, json, shutil, random, subprocess
+import os, json, shutil, random, subprocess, time, threading
 from music21 import stream, chord, note, instrument, tempo, metadata, midi
 
+# --- Paths ---
 CONFIG_PATH = "config.json"
 OUTPUT_PATH = "output"
-FFMPEG_PATH = "ffmpeg/bin/ffmpeg.exe"
-FLUIDSYNTH_PATH = "fluidsynth/bin/fluidsynth.exe"
-SOUNDFONT_PATH = "FluidR3_GM/FluidR3_GM.sf2"
-BGM_PATH = "assets/bgm.mp3"
+FFMPEG_PATH = os.path.join("ffmpeg", "bin", "ffmpeg.exe")
+FLUIDSYNTH_PATH = os.path.join("fluidsynth", "bin", "fluidsynth.exe")
+SOUNDFONT_PATH = os.path.join("FluidR3_GM", "FluidR3_GM.sf2")
+BGM_PATH = os.path.join("assets", "bgm.mp3")
 
+# --- Section Lengths ---
 SECTION_LENGTHS = {
     "intro": 4, "groove": 8, "verse": 8, "chorus": 8, "bridge": 8,
     "drop": 8, "build": 8, "solo": 8, "outro": 4, "loop": 16,
     "variation": 8, "layered_loop": 8, "fadeout": 4, "layer1": 8,
-    "layer2": 8, "ambient_loop": 16, "dream_flow": 8,
-    "infinite_loop": 16, "loop_a": 8, "focus_block": 8,
-    "pause_fill": 4, "soothing_loop": 16, "deep_layer": 8,
-    "dream_pad": 8
+    "layer2": 8, "ambient_loop": 16, "dream_flow": 8, "infinite_loop": 16,
+    "loop_a": 8, "focus_block": 8, "pause_fill": 4, "soothing_loop": 16,
+    "deep_layer": 8, "dream_pad": 8
 }
 
+# --- Instrument Mapping ---
 INSTRUMENT_MAP = {
     "Charango": instrument.Mandolin(), "Reeds": instrument.EnglishHorn(),
     "Harp": instrument.Harp(), "Piano": instrument.Piano(),
@@ -29,7 +31,6 @@ INSTRUMENT_MAP = {
     "Flute": instrument.Flute(), "Chill Guitar": instrument.AcousticGuitar(),
     "Electric Guitar": instrument.ElectricGuitar()
 }
-
 
 def load_config():
     with open(CONFIG_PATH, "r") as f:
@@ -52,12 +53,14 @@ def convert_midi_to_mp3(midi_path):
             stderr=subprocess.PIPE,
             text=True
         )
-        duration_line = [line for line in result.stderr.splitlines() if "Duration" in line]
+
         duration = None
-        if duration_line:
-            time_str = duration_line[0].split("Duration:")[1].split(",")[0].strip()
-            h, m, s = map(float, time_str.replace(":", " ").split())
-            duration = h * 3600 + m * 60 + s
+        for line in result.stderr.splitlines():
+            if "Duration" in line:
+                time_str = line.split("Duration:")[1].split(",")[0].strip()
+                h, m, s = map(float, time_str.replace(":", " ").split())
+                duration = h * 3600 + m * 60 + s
+                break
 
         if not duration:
             raise Exception("Could not extract MP3 duration.")
@@ -101,7 +104,7 @@ def create_melody_part(mode, structure):
         while beats < total_beats:
             phrase = random.choice([motif, motif[::-1], [random.choice(scale) for _ in range(4)]])
             for pitch in phrase:
-                dur = random.choice([0.5, 1.0]) if mode == "focus" else 1.0
+                dur = 0.5 if mode == "focus" else 1.0
                 n = note.Note(pitch, quarterLength=dur)
                 n.volume.velocity = random.randint(40, 70)
                 melody.append(n)
@@ -115,6 +118,7 @@ def generate_music(mode):
     data = config.get(mode)
     if not data:
         raise ValueError(f"Invalid mode: {mode}")
+
     bpm = data.get("tempo", 80)
     instruments = data.get("instruments", [])
     structure = data.get("structure", ["intro", "loop", "outro"])
@@ -160,13 +164,32 @@ def generate_music(mode):
                 c = chord.Chord(random.choice(progression), quarterLength=length)
                 c.volume.velocity = vel
                 part.append(c)
-                beats += c.quarterLength
+                beats += length
         score.append(part)
 
     score.append(create_melody_part(mode, structure))
 
     midi_path = os.path.join(OUTPUT_PATH, f"{mode}.mid")
     mf = midi.translate.streamToMidiFile(score)
-    mf.open(midi_path, 'wb'); mf.write(); mf.close()
+    mf.open(midi_path, 'wb')
+    mf.write()
+    mf.close()
 
     return convert_midi_to_mp3(midi_path)
+
+pause_condition = threading.Condition()
+is_paused_flag = {"value": False}
+
+def wait_with_pause(duration, stop_flag, pause_condition, is_paused_flag):
+    waited = 0
+    interval = 0.5
+    while waited < duration:
+        with pause_condition:
+            if stop_flag["value"]:
+                print("⏹️ Stop signal received.")
+                break
+            while is_paused_flag["value"]:
+                print("⏸️ Paused... waiting to resume.")
+                pause_condition.wait()
+        time.sleep(interval)
+        waited += interval
