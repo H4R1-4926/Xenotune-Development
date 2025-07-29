@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import time
-from music_gen import generate_music
+from music_gen import generate_music, is_paused_flag, pause_condition
 from firebase import upload_to_firebase
 
 app = FastAPI(title="Xenotune AI Music Generator")
@@ -70,3 +70,19 @@ async def handle_music_generation(request: GenerateMusicRequest):
 @app.get("/", summary="Xenotune API Health")
 def health_check():
     return {"message": "🎶 Xenotune backend is alive and ready to generate music!"}
+
+# --- Pause Music Generation ---
+@app.post("/pause")
+def pause_generation():
+    is_paused_flag["value"] = True
+    with pause_condition:
+        pause_condition.notify_all()
+    return {"status": "paused"}
+
+# --- Resume Music Generation ---
+@app.post("/resume")
+def resume_generation():
+    is_paused_flag["value"] = False
+    with pause_condition:
+        pause_condition.notify_all()
+    return {"status": "resumed"}
