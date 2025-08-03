@@ -30,7 +30,7 @@ def init_firebase():
     cred = credentials.Certificate(firebase_key_path)
       
     firebase_admin.initialize_app(cred, {
-        'storageBucket': os.getenv('FIREBASE_BUCKET', 'xenotune-fromx.appspot.com')  # ✅ corrected bucket name
+        'storageBucket': os.getenv('FIREBASE_BUCKET', 'xenotune-fromx.firebasestorage.app') 
     })
 
     firebase_initialized = True
