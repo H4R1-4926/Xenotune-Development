@@ -4,4 +4,4 @@
 apt-get update && apt-get install -y ffmpeg fluidsynth
 
 # Start your app
-uvicorn main:app --bind 0.0.0.0:8000
+uvicorn main:app --host 0.0.0.0 --port 10000
