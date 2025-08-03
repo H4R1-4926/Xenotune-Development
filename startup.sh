@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Install packages if not already installed
-apt-get update && apt-get install -y ffmpeg fluidsynth
+sudo apt-get update && sudo apt-get install -y fluidsynth
 
 # Start your app
 uvicorn main:app --host 0.0.0.0 --port 10000
