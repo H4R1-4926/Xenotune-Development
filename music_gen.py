@@ -4,10 +4,10 @@ from music21 import stream, chord, note, instrument, tempo, metadata, midi
 # --- Paths ---
 CONFIG_PATH = "config.json"
 OUTPUT_PATH = "output"
-# FFMPEG_PATH = os.path.join("ffmpeg", "bin", "ffmpeg.exe")
-# FLUIDSYNTH_PATH = os.path.join("fluidsynth", "bin", "fluidsynth.exe")
-FFMPEG_PATH = "ffmpeg"
-FLUIDSYNTH_PATH = "fluidsynth"
+FFMPEG_PATH = os.path.join("ffmpeg", "bin", "ffmpeg.exe")
+FLUIDSYNTH_PATH = os.path.join("fluidsynth", "bin", "fluidsynth.exe")
+# FFMPEG_PATH = "ffmpeg"
+# FLUIDSYNTH_PATH = "fluidsynth"
 SOUNDFONT_PATH = os.path.join("FluidR3_GM", "FluidR3_GM.sf2")
 BGM_PATH = os.path.join("assets", "bgm.mp3")
 
