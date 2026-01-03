@@ -68,3 +68,9 @@ secrets/
 
 #serviceAccountKey.json
 serviceAccountKey.json
+
+# Fluid ....
+fluidsynth/
+ffmpeg/
+FluidR3_GM/
+*.sf2
